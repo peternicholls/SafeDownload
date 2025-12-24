@@ -229,22 +229,31 @@ add_download() {
     local state
     state=$(read_state)
     
+    # Escape special characters for JSON
+    local escaped_url escaped_output escaped_sha escaped_sha_type
+    escaped_url=$(printf '%s' "$url" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
+    escaped_output=$(printf '%s' "$output" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
+    escaped_sha=$(printf '%s' "$sha" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
+    escaped_sha_type=$(printf '%s' "$sha_type" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read())[1:-1])')
+    local created_at
+    created_at=$(date -Iseconds)
+    
     local new_state
     new_state=$(echo "$state" | python3 -c "
 import json, sys
 d = json.load(sys.stdin)
 new_download = {
     'id': $id,
-    'url': '''$url''',
-    'output': '''$output''',
-    'sha': '''$sha''',
-    'sha_type': '''$sha_type''',
+    'url': \"$escaped_url\",
+    'output': \"$escaped_output\",
+    'sha': \"$escaped_sha\",
+    'sha_type': \"$escaped_sha_type\",
     'state': '$STATE_QUEUED',
     'progress': 0,
     'size': 0,
     'downloaded': 0,
-    'created_at': '$(date -Iseconds)',
-    'updated_at': '$(date -Iseconds)'
+    'created_at': '$created_at',
+    'updated_at': '$created_at'
 }
 d['downloads'].append(new_download)
 d['next_id'] = $id + 1
@@ -480,11 +489,10 @@ download_file() {
         "$url"
     )
     
-    # Execute download with progress tracking
-    if "${curl_cmd[@]}" 2>&1 | while IFS= read -r line; do
+    # Execute download - capture exit code properly using PIPESTATUS
+    "${curl_cmd[@]}" 2>&1 | while IFS= read -r line; do
         # Parse curl progress
         if [[ "$line" =~ ([0-9]+)% ]]; then
-            local percent="${BASH_REMATCH[1]}"
             if [[ $download_id -gt 0 ]]; then
                 local current_size
                 current_size=$(get_file_size "$temp_file")
@@ -492,7 +500,12 @@ download_file() {
             fi
         fi
         echo "$line"
-    done; then
+    done
+    
+    # Check curl exit status from PIPESTATUS
+    local curl_exit=${PIPESTATUS[0]}
+    
+    if [[ $curl_exit -eq 0 ]]; then
         # Download successful
         mv "$temp_file" "$output_file"
         
@@ -886,7 +899,8 @@ draw_hline() {
     local start_col=$2
     local length=$3
     tput cup "$row" "$start_col"
-    printf '─%.0s' $(seq 1 "$length")
+    # Use printf with width specifier for efficiency
+    printf '%*s' "$length" '' | tr ' ' '─'
 }
 
 # Draw vertical line

@@ -149,8 +149,11 @@ echo
 
 # Test 11: Status command
 echo "Test 11: Verify status command"
-# Strip ANSI color codes before checking
-if ./safedownload --status 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | grep -q "SafeDownload Status\|No downloads"; then
+# Strip all ANSI escape codes (comprehensive pattern)
+strip_ansi() {
+    sed 's/\x1b\[[0-9;?]*[a-zA-Z]//g; s/\x1b\].*\x07//g; s/\x1b[^[]*//g'
+}
+if ./safedownload --status 2>&1 | strip_ansi | grep -q "SafeDownload Status\|No downloads"; then
     echo "✓ Status command works"
 else
     echo "✗ Status command failed"
