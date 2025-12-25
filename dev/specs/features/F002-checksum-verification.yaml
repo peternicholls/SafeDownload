@@ -1,0 +1,161 @@
+# Feature F002: Checksum Verification
+# Constitution: v1.5.0
+# Status: COMPLETED (v0.1.0)
+#
+# This is a backfilled spec documenting the implemented feature.
+
+metadata:
+  id: "F002"
+  name: "Checksum Verification"
+  version: "0.1.0"
+  sprint: 0
+  status: "completed"
+  priority: "P0"
+  story_points: 5
+  created: "2025-12-24"
+  updated: "2025-12-25"
+  completed_date: "2025-12-24"
+
+description: |
+  Cryptographic verification of downloaded files using SHA256, SHA512, SHA1,
+  and MD5 checksums. Checksum mismatches are fatal - files are marked failed,
+  not silently accepted.
+
+  Implements Constitution Principle IV (Verification & Trust).
+
+constitution_compliance:
+  principles:
+    - id: "IV"
+      name: "Verification & Trust"
+      notes: "SHA256/SHA512/SHA1/MD5 support, fatal on mismatch"
+
+  gates:
+    - gate: "Security"
+      requirement: "Checksum mismatches are fatal"
+      test: "Download with wrong checksum, verify exit code 3"
+      status: "passed"
+
+    - gate: "Security"
+      requirement: "All common algorithms supported"
+      test: "Verify SHA256, SHA512, SHA1, MD5 work"
+      status: "passed"
+
+user_stories:
+  - id: "US002-1"
+    priority: "P0"
+    title: "Verify download with checksum"
+    description: |
+      As a security-conscious user,
+      I want to verify downloaded files against checksums,
+      So that I can trust the files are authentic and unmodified.
+
+    acceptance_criteria:
+      - "GIVEN checksum via -c flag, WHEN download completes, THEN checksum verified"
+      - "GIVEN matching checksum, WHEN verification runs, THEN exit code 0"
+      - "GIVEN mismatched checksum, WHEN verification runs, THEN exit code 3"
+
+    definition_of_done:
+      - "✅ -c flag accepts checksum in algo:hash format"
+      - "✅ SHA256, SHA512, SHA1, MD5 algorithms supported"
+      - "✅ Exit code 3 on mismatch"
+
+  - id: "US002-2"
+    priority: "P1"
+    title: "Size verification"
+    description: |
+      As a user,
+      I want downloaded file size verified against Content-Length,
+      So that I can detect truncated downloads.
+
+    acceptance_criteria:
+      - "GIVEN server provides Content-Length, WHEN download completes, THEN size verified"
+      - "GIVEN size mismatch, WHEN verification runs, THEN download marked failed"
+
+    definition_of_done:
+      - "✅ Content-Length captured from HTTP headers"
+      - "✅ Final file size compared to expected"
+
+functional_requirements:
+  - id: "FR002-1"
+    description: "System MUST support SHA256 checksum verification"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR002-2"
+    description: "System MUST support SHA512 checksum verification"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR002-3"
+    description: "System MUST support SHA1 checksum verification"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR002-4"
+    description: "System MUST support MD5 checksum verification"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR002-5"
+    description: "System MUST exit with code 3 on checksum mismatch"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR002-6"
+    description: "System MUST verify file size against Content-Length"
+    priority: "MUST"
+    status: "implemented"
+
+non_functional_requirements:
+  security:
+    - "Checksum mismatches are fatal (never silent)"
+    - "SHA256/SHA512 recommended for production"
+
+  performance:
+    - "Checksum verification should be fast (<1s for 100MB file)"
+
+implementation:
+  packages:
+    - name: "safedownload (main script)"
+      purpose: "Checksum verification logic"
+      files:
+        - "safedownload"
+
+  cli:
+    flags:
+      - flag: "-c, --checksum"
+        type: "string"
+        format: "algo:hash"
+        description: "Expected checksum (e.g., sha256:abc123...)"
+
+  dependencies:
+    - "shasum or sha256sum (system)"
+    - "md5sum or md5 (system)"
+
+error_handling:
+  - error: "Checksum mismatch"
+    exit_code: 3
+    retry: false
+    user_action: "Re-download or verify checksum is correct"
+
+  - error: "Size mismatch"
+    exit_code: 3
+    retry: false
+    user_action: "Re-download from scratch"
+
+testing:
+  implemented_tests:
+    - "SHA256 verification with valid checksum"
+    - "SHA256 verification with invalid checksum"
+    - "Size verification"
+
+documentation:
+  readme_sections:
+    - "Checksum Verification"
+    - "Supported Algorithms"
+
+notes: |
+  This feature was implemented as part of the initial v0.1.0 release.
+  Spec backfilled for documentation completeness.
+
+  Future enhancement (F017): GPG signature verification for defense-in-depth.

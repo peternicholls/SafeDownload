@@ -1,0 +1,189 @@
+# Feature F005: Batch Downloads
+# Constitution: v1.5.0
+# Status: COMPLETED (v0.1.0)
+#
+# This is a backfilled spec documenting the implemented feature.
+
+metadata:
+  id: "F005"
+  name: "Batch Downloads"
+  version: "0.1.0"
+  sprint: 0
+  status: "completed"
+  priority: "P1"
+  story_points: 5
+  created: "2025-12-24"
+  updated: "2025-12-25"
+  completed_date: "2025-12-24"
+
+description: |
+  Support for downloading multiple files from a manifest file with configurable
+  parallelism. Each line in the manifest specifies a URL, optional output filename,
+  and optional checksum.
+
+  Implements Constitution Principle V (Intelligent Parallelism & Queue Management).
+
+constitution_compliance:
+  principles:
+    - id: "V"
+      name: "Intelligent Parallelism & Queue Management"
+      notes: "Parallel downloads, configurable concurrency, independent execution"
+
+  gates:
+    - gate: "Reliability"
+      requirement: "Failures in one download don't block others"
+      test: "Queue 3 downloads, fail one, verify others complete"
+      status: "passed"
+
+    - gate: "Performance"
+      requirement: "Parallel downloads configurable"
+      test: "Set --parallel 5, verify 5 concurrent downloads"
+      status: "passed"
+
+user_stories:
+  - id: "US005-1"
+    priority: "P1"
+    title: "Download multiple files from manifest"
+    description: |
+      As a user,
+      I want to download multiple files from a manifest file,
+      So that I can batch download without typing each URL.
+
+    acceptance_criteria:
+      - "GIVEN manifest file, WHEN --manifest flag used, THEN all URLs queued"
+      - "GIVEN manifest with checksums, WHEN downloading, THEN checksums verified"
+      - "GIVEN manifest with output names, WHEN downloading, THEN custom names used"
+
+    definition_of_done:
+      - "✅ --manifest flag accepts file path"
+      - "✅ One URL per line parsed"
+      - "✅ Optional output filename parsed"
+      - "✅ Optional checksum parsed"
+
+  - id: "US005-2"
+    priority: "P1"
+    title: "Configure parallel download count"
+    description: |
+      As a user,
+      I want to control how many downloads run simultaneously,
+      So that I can balance speed against bandwidth/CPU usage.
+
+    acceptance_criteria:
+      - "GIVEN --parallel N flag, WHEN downloading, THEN N downloads run concurrently"
+      - "GIVEN default (no flag), WHEN downloading, THEN 3 downloads run concurrently"
+      - "GIVEN /parallel N command, WHEN in TUI, THEN parallelism updated"
+
+    definition_of_done:
+      - "✅ --parallel flag sets concurrency"
+      - "✅ Default concurrency is 3"
+      - "✅ /parallel TUI command works"
+
+  - id: "US005-3"
+    priority: "P2"
+    title: "Independent download execution"
+    description: |
+      As a user,
+      I want each download to run independently,
+      So that failures don't cascade.
+
+    acceptance_criteria:
+      - "GIVEN download fails, WHEN others queued, THEN others continue"
+      - "GIVEN download completes, WHEN others running, THEN status updates"
+
+    definition_of_done:
+      - "✅ Each download tracks own status"
+      - "✅ Failed downloads don't block queue"
+
+functional_requirements:
+  - id: "FR005-1"
+    description: "System MUST support --manifest flag for batch downloads"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR005-2"
+    description: "System MUST parse manifest format: URL [output] [checksum]"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR005-3"
+    description: "System MUST support --parallel flag for concurrency"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR005-4"
+    description: "System MUST default to 3 parallel downloads"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR005-5"
+    description: "System MUST execute downloads independently"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR005-6"
+    description: "System MUST support /parallel TUI command"
+    priority: "SHOULD"
+    status: "implemented"
+
+non_functional_requirements:
+  performance:
+    - "Parallel downloads maximize throughput"
+    - "No queue blocking on single failure"
+
+  reliability:
+    - "Each download independent"
+    - "Retry logic per-download"
+
+implementation:
+  packages:
+    - name: "safedownload (main script)"
+      purpose: "Manifest parsing and parallel execution"
+      files:
+        - "safedownload"
+
+  cli:
+    flags:
+      - flag: "-m, --manifest"
+        type: "string"
+        description: "Path to manifest file"
+
+      - flag: "-p, --parallel"
+        type: "integer"
+        default: "3"
+        description: "Number of concurrent downloads"
+
+    commands:
+      - "/parallel N - Set parallelism to N"
+      - "/manifest <file> - Load manifest file"
+
+  manifest_format: |
+    # Comments start with #
+    # Format: URL [output] [checksum]
+    https://example.com/file.zip
+    https://example.com/file2.tar.gz output.tar.gz
+    https://example.com/file3.bin file3.bin sha256:abc123...
+
+testing:
+  implemented_tests:
+    - "Manifest parsing with URLs only"
+    - "Manifest parsing with output names"
+    - "Manifest parsing with checksums"
+    - "Parallel download execution"
+
+documentation:
+  readme_sections:
+    - "Batch Downloads"
+    - "Manifest Format"
+    - "Parallel Downloads"
+
+notes: |
+  This feature was implemented as part of the initial v0.1.0 release.
+  Spec backfilled for documentation completeness.
+
+  Manifest Format Example:
+  ```
+  # SafeDownload Manifest
+  https://example.com/file1.zip
+  https://example.com/file2.tar.gz myfile.tar.gz
+  https://example.com/file3.bin file3.bin sha256:abc123...
+  ```

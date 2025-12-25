@@ -1,0 +1,184 @@
+# Feature F004: State Persistence
+# Constitution: v1.5.0
+# Status: COMPLETED (v0.1.0)
+#
+# This is a backfilled spec documenting the implemented feature.
+
+metadata:
+  id: "F004"
+  name: "State Persistence"
+  version: "0.1.0"
+  sprint: 0
+  status: "completed"
+  priority: "P0"
+  story_points: 5
+  created: "2025-12-24"
+  updated: "2025-12-25"
+  completed_date: "2025-12-24"
+
+description: |
+  Persistent state storage for download queue and progress in JSON format.
+  All state survives system restarts, and interrupted downloads auto-resume
+  on next launch.
+
+  Implements Constitution Principle VII (State Persistence & Auto-Resume).
+
+constitution_compliance:
+  principles:
+    - id: "VII"
+      name: "State Persistence & Auto-Resume"
+      notes: "JSON state in ~/.safedownload/, auto-save on state change"
+
+    - id: "IX"
+      name: "Privacy & Data Minimization"
+      notes: "Local-only storage, no external transmission"
+
+  gates:
+    - gate: "Reliability"
+      requirement: "State survives system restart"
+      test: "Add download, restart, verify download in queue"
+      status: "passed"
+
+    - gate: "Privacy"
+      requirement: "All data local to ~/.safedownload/"
+      test: "Verify no external network calls for state"
+      status: "passed"
+
+user_stories:
+  - id: "US004-1"
+    priority: "P0"
+    title: "Persist download queue across restarts"
+    description: |
+      As a user,
+      I want my download queue saved automatically,
+      So that I don't lose my queue if I close the terminal.
+
+    acceptance_criteria:
+      - "GIVEN downloads in queue, WHEN terminal closes, THEN queue saved to state.json"
+      - "GIVEN state.json exists, WHEN TUI launches, THEN queue restored"
+      - "GIVEN download in progress, WHEN interrupted, THEN marked as paused in state"
+
+    definition_of_done:
+      - "✅ state.json created in ~/.safedownload/"
+      - "✅ State saved after every change"
+      - "✅ State loaded on launch"
+
+  - id: "US004-2"
+    priority: "P0"
+    title: "Auto-resume interrupted downloads"
+    description: |
+      As a user,
+      I want interrupted downloads to resume automatically,
+      So that I never lose progress on large files.
+
+    acceptance_criteria:
+      - "GIVEN paused download in state, WHEN TUI launches, THEN download can be resumed"
+      - "GIVEN .part file exists, WHEN resuming, THEN continue from last byte"
+
+    definition_of_done:
+      - "✅ Paused downloads tracked in state"
+      - "✅ Resume position stored"
+      - "✅ Auto-resume on /resume command"
+
+  - id: "US004-3"
+    priority: "P1"
+    title: "Track background downloads"
+    description: |
+      As a user,
+      I want background downloads tracked via PID files,
+      So that I can monitor them across sessions.
+
+    acceptance_criteria:
+      - "GIVEN background download started, WHEN running, THEN PID saved to pids/N.pid"
+      - "GIVEN PID file exists, WHEN checking status, THEN download status known"
+
+    definition_of_done:
+      - "✅ PID files created in ~/.safedownload/pids/"
+      - "✅ PID tracked per download ID"
+
+functional_requirements:
+  - id: "FR004-1"
+    description: "System MUST save state to ~/.safedownload/state.json"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR004-2"
+    description: "System MUST save state after every change"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR004-3"
+    description: "System MUST load state on launch"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR004-4"
+    description: "System MUST track PIDs in ~/.safedownload/pids/"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR004-5"
+    description: "System MUST NOT transmit state externally"
+    priority: "MUST"
+    status: "implemented"
+
+non_functional_requirements:
+  reliability:
+    - "State never lost on crash (save-on-change)"
+    - "Graceful handling of corrupt state files"
+
+  privacy:
+    - "All state local to ~/.safedownload/"
+    - "No telemetry or external transmission"
+
+  performance:
+    - "State load <50ms for typical queue"
+
+implementation:
+  packages:
+    - name: "safedownload (main script)"
+      purpose: "State management"
+      files:
+        - "safedownload"
+
+  storage:
+    state_directory: "~/.safedownload/"
+    files:
+      - "state.json - Download queue and status"
+      - "config.json - User configuration"
+      - "safedownload.log - Operation log"
+      - "pids/*.pid - Background download PIDs"
+
+  schema:
+    state_json:
+      version: "0.1.0"
+      fields:
+        - "schema_version: string"
+        - "downloads: array of DownloadItem"
+        - "config: object"
+
+testing:
+  implemented_tests:
+    - "State file created on first run"
+    - "State persists across restarts"
+    - "PID files created for background downloads"
+
+documentation:
+  readme_sections:
+    - "State Directory"
+    - "Auto-Resume"
+
+notes: |
+  This feature was implemented as part of the initial v0.1.0 release.
+  Spec backfilled for documentation completeness.
+
+  Future enhancement (F010): Schema versioning with auto-migration.
+
+  State Directory Structure:
+  ~/.safedownload/
+  ├── state.json
+  ├── config.json
+  ├── safedownload.log
+  ├── pids/
+  │   └── 1.pid, 2.pid, ...
+  └── downloads/ (default output)

@@ -1,0 +1,153 @@
+# Feature F001: Core Download Engine
+# Constitution: v1.5.0
+# Status: COMPLETED (v0.1.0)
+#
+# This is a backfilled spec documenting the implemented feature.
+
+metadata:
+  id: "F001"
+  name: "Core Download Engine"
+  version: "0.1.0"
+  sprint: 0 # Pre-sprint (initial implementation)
+  status: "completed"
+  priority: "P0"
+  story_points: 8
+  created: "2025-12-24"
+  updated: "2025-12-25"
+  completed_date: "2025-12-24"
+
+description: |
+  Basic download functionality using curl with support for resumable downloads
+  via HTTP Range requests. This is the foundational feature that all other
+  features build upon.
+
+  Implements Constitution Principle III (Resumable Downloads).
+
+constitution_compliance:
+  principles:
+    - id: "III"
+      name: "Resumable Downloads (Non-Negotiable Reliability)"
+      notes: "HTTP Range requests, .part file tracking, auto-retry"
+
+    - id: "II"
+      name: "Optional Enhanced Features"
+      notes: "Uses only curl (core dependency)"
+
+  gates:
+    - gate: "Reliability"
+      requirement: "Downloads resume from interruption point"
+      test: "Interrupt download, restart, verify continuation"
+      status: "passed"
+
+    - gate: "Dependencies"
+      requirement: "Only curl required"
+      test: "Verify only curl is called for downloads"
+      status: "passed"
+
+user_stories:
+  - id: "US001-1"
+    priority: "P0"
+    title: "Download a file from URL"
+    description: |
+      As a user,
+      I want to download a file from a URL,
+      So that I can save files from the internet to my computer.
+
+    acceptance_criteria:
+      - "GIVEN a valid URL, WHEN I run safedownload <url>, THEN file downloads to current directory"
+      - "GIVEN a URL and -o flag, WHEN I run safedownload <url> -o <path>, THEN file saves to specified path"
+      - "GIVEN download completes, WHEN I check exit code, THEN exit code is 0"
+
+    definition_of_done:
+      - "✅ curl-based download implemented"
+      - "✅ Output path configurable via -o flag"
+      - "✅ Exit code 0 on success"
+
+  - id: "US001-2"
+    priority: "P0"
+    title: "Resume interrupted download"
+    description: |
+      As a user,
+      I want interrupted downloads to resume automatically,
+      So that I don't lose progress on large files.
+
+    acceptance_criteria:
+      - "GIVEN interrupted download with .part file, WHEN I restart, THEN download resumes from last byte"
+      - "GIVEN server supports Range requests, WHEN resuming, THEN only remaining bytes downloaded"
+      - "GIVEN download completes, WHEN .part file exists, THEN .part is renamed to final filename"
+
+    definition_of_done:
+      - "✅ .part file created during download"
+      - "✅ Resume position calculated from .part size"
+      - "✅ HTTP Range header sent for resume"
+      - "✅ .part renamed on completion"
+
+functional_requirements:
+  - id: "FR001-1"
+    description: "System MUST download files using curl"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR001-2"
+    description: "System MUST support custom output path via -o flag"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR001-3"
+    description: "System MUST create .part files for in-progress downloads"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR001-4"
+    description: "System MUST resume downloads via HTTP Range requests"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR001-5"
+    description: "System MUST rename .part to final filename on completion"
+    priority: "MUST"
+    status: "implemented"
+
+non_functional_requirements:
+  performance:
+    - "Download speed limited only by network/server"
+
+  reliability:
+    - "Downloads survive interruptions (Ctrl+C, network loss)"
+    - "3 retry attempts with exponential backoff"
+
+  platform_support:
+    - "Tier 1: macOS, Ubuntu LTS, Debian 12+"
+
+implementation:
+  packages:
+    - name: "safedownload (main script)"
+      purpose: "Core download logic"
+      files:
+        - "safedownload"
+
+  cli:
+    flags:
+      - flag: "-o, --output"
+        type: "string"
+        description: "Output file path"
+
+    commands: []
+
+  dependencies:
+    - "curl 7.60+"
+
+testing:
+  implemented_tests:
+    - "Basic download from HTTPS URL"
+    - "Custom output path"
+    - "Resume detection"
+
+documentation:
+  readme_sections:
+    - "Quick Start"
+    - "Basic Usage"
+
+notes: |
+  This feature was implemented as part of the initial v0.1.0 release.
+  Spec backfilled for documentation completeness.

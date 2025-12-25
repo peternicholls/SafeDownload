@@ -1,0 +1,381 @@
+# Sprint 1 - v0.2.0 "Shield" Security & Privacy
+# Constitution: v1.5.0 - Sprint Planning Standards
+# Created from: dev/sprints/sprint-template.yaml
+
+metadata:
+  sprint: 1
+  version: "0.2.0"
+  codename: "Shield"
+  start_date: "2026-01-06" # Planned Q1 2026 per roadmap
+  end_date: "2026-01-17"
+  duration_weeks: 2
+  goal: "Implement security posture and privacy hardening per Constitution Principles IX and X"
+
+# Features planned for this sprint (from dev/roadmap.yaml)
+features:
+  - id: "F006"
+    name: "Security Posture"
+    story_points: 8
+    status: "not_started"
+    priority: "P1"
+    dependencies: []
+    spec: "dev/specs/features/F006-security-posture.yaml"
+    notes: |
+      HTTPS-only enforcement, TLS verification, proxy support.
+      Core Constitution Principle X implementation.
+
+  - id: "F007"
+    name: "Privacy & Data Minimization"
+    story_points: 5
+    status: "not_started"
+    priority: "P1"
+    dependencies: []
+    spec: "dev/specs/features/F007-privacy.yaml"
+    notes: |
+      /purge command, log rotation, credential sanitization.
+      Core Constitution Principle IX implementation.
+
+# Daily task breakdown
+tasks:
+  # ==========================================================================
+  # Day 1: Sprint Planning & Setup
+  # ==========================================================================
+  - id: "T001-001"
+    feature: "SPRINT"
+    title: "Sprint planning and task breakdown review"
+    assignee: "@peternicholls"
+    estimate: "0.5 SP"
+    status: "not_started"
+    day: 1
+    dependencies: []
+    notes: "Review this sprint plan, adjust estimates if needed"
+
+  # ==========================================================================
+  # Day 1-2: F006 Security Posture - CLI Flags
+  # ==========================================================================
+  - id: "T006-001"
+    feature: "F006"
+    title: "Add --allow-http and --insecure flags to CLI parser"
+    assignee: "@peternicholls"
+    estimate: "1 SP"
+    status: "not_started"
+    day: 1
+    dependencies: ["T001-001"]
+    notes: "Modify safedownload script argument parsing"
+
+  - id: "T006-002"
+    feature: "F006"
+    title: "Implement HTTPS enforcement in download logic"
+    assignee: "@peternicholls"
+    estimate: "2 SP"
+    status: "not_started"
+    day: 2
+    dependencies: ["T006-001"]
+    notes: "Check URL scheme before curl, reject http:// without flag"
+
+  # ==========================================================================
+  # Day 3: F006 Security Posture - TLS & Proxy
+  # ==========================================================================
+  - id: "T006-003"
+    feature: "F006"
+    title: "Implement TLS verification with --insecure bypass"
+    assignee: "@peternicholls"
+    estimate: "1.5 SP"
+    status: "not_started"
+    day: 3
+    dependencies: ["T006-002"]
+    notes: "Use curl -k for --insecure, log security warning"
+
+  - id: "T006-004"
+    feature: "F006"
+    title: "Implement proxy support (HTTP_PROXY, HTTPS_PROXY, NO_PROXY)"
+    assignee: "@peternicholls"
+    estimate: "1.5 SP"
+    status: "not_started"
+    day: 3
+    dependencies: ["T006-002"]
+    notes: "curl respects these by default, add documentation"
+
+  # ==========================================================================
+  # Day 4: F006 Credential Sanitization & F007 Privacy
+  # ==========================================================================
+  - id: "T006-005"
+    feature: "F006"
+    title: "Implement credential sanitization in logs"
+    assignee: "@peternicholls"
+    estimate: "1 SP"
+    status: "not_started"
+    day: 4
+    dependencies: ["T006-003"]
+    notes: "Sanitize URLs with user:pass@, filter headers"
+
+  - id: "T007-001"
+    feature: "F007"
+    title: "Implement /purge TUI command"
+    assignee: "@peternicholls"
+    estimate: "1.5 SP"
+    status: "not_started"
+    day: 4
+    dependencies: ["T001-001"]
+    notes: "Remove state.json, logs, PIDs with confirmation"
+
+  # ==========================================================================
+  # Day 5: F007 Privacy Features
+  # ==========================================================================
+  - id: "T007-002"
+    feature: "F007"
+    title: "Implement --purge CLI flag"
+    assignee: "@peternicholls"
+    estimate: "1 SP"
+    status: "not_started"
+    day: 5
+    dependencies: ["T007-001"]
+    notes: "CLI equivalent of /purge command"
+
+  - id: "T007-003"
+    feature: "F007"
+    title: "Implement log rotation (10MB cap)"
+    assignee: "@peternicholls"
+    estimate: "1.5 SP"
+    status: "not_started"
+    day: 5
+    dependencies: ["T001-001"]
+    notes: "Check log size before write, rotate if >10MB"
+
+  # ==========================================================================
+  # Day 6-7: Testing
+  # ==========================================================================
+  - id: "T006-006"
+    feature: "F006"
+    title: "Write unit tests for HTTPS enforcement"
+    assignee: "@peternicholls"
+    estimate: "1.5 SP"
+    status: "not_started"
+    day: 6
+    dependencies: ["T006-005"]
+    notes: "Test HTTP rejection, --allow-http override"
+
+  - id: "T006-007"
+    feature: "F006"
+    title: "Write tests for credential sanitization"
+    assignee: "@peternicholls"
+    estimate: "1 SP"
+    status: "not_started"
+    day: 6
+    dependencies: ["T006-005"]
+    notes: "Verify no credentials in logs"
+
+  - id: "T007-004"
+    feature: "F007"
+    title: "Write tests for /purge and log rotation"
+    assignee: "@peternicholls"
+    estimate: "1 SP"
+    status: "not_started"
+    day: 7
+    dependencies: ["T007-003"]
+    notes: "Test purge removes all data, log rotates at 10MB"
+
+  - id: "T006-008"
+    feature: "F006"
+    title: "Write E2E tests for CLI security features"
+    assignee: "@peternicholls"
+    estimate: "1 SP"
+    status: "not_started"
+    day: 7
+    dependencies: ["T006-007"]
+    notes: "BATS tests for --allow-http, --insecure"
+
+  # ==========================================================================
+  # Day 8-9: Documentation
+  # ==========================================================================
+  - id: "T006-009"
+    feature: "F006"
+    title: "Update README with Security section"
+    assignee: "@peternicholls"
+    estimate: "1 SP"
+    status: "not_started"
+    day: 8
+    dependencies: ["T006-008"]
+    notes: "Document HTTPS-only, --allow-http, --insecure, proxy"
+
+  - id: "T007-005"
+    feature: "F007"
+    title: "Update README with Privacy section"
+    assignee: "@peternicholls"
+    estimate: "0.5 SP"
+    status: "not_started"
+    day: 8
+    dependencies: ["T007-004"]
+    notes: "Document /purge, --purge, log rotation"
+
+  - id: "SPRINT-002"
+    feature: "SPRINT"
+    title: "Update CHANGELOG.md for v0.2.0"
+    assignee: "@peternicholls"
+    estimate: "0.5 SP"
+    status: "not_started"
+    day: 9
+    dependencies: ["T006-009", "T007-005"]
+    notes: "Add all v0.2.0 features to changelog"
+
+  # ==========================================================================
+  # Day 10: Review & Release
+  # ==========================================================================
+  - id: "SPRINT-003"
+    feature: "SPRINT"
+    title: "Constitution gate verification"
+    assignee: "@peternicholls"
+    estimate: "0.5 SP"
+    status: "not_started"
+    day: 10
+    dependencies: ["SPRINT-002"]
+    notes: "Verify all Constitution Principles IX, X gates pass"
+
+  - id: "SPRINT-004"
+    feature: "SPRINT"
+    title: "Sprint review and retrospective"
+    assignee: "@peternicholls"
+    estimate: "0.5 SP"
+    status: "not_started"
+    day: 10
+    dependencies: ["SPRINT-003"]
+    notes: "Demo, retrospective, plan Sprint 2"
+
+# Sprint capacity and velocity
+capacity:
+  team_size: 1
+  available_days: 10
+  planned_story_points: 18
+  buffer_percentage: 20
+  effective_capacity: 20 # 25 SP max per constitution, using 18 for buffer
+
+# Daily progress tracking (update daily during sprint)
+daily_log:
+  day_1:
+    date: "2026-01-06"
+    completed_tasks: []
+    blockers: []
+    notes: "Sprint start - TBD"
+
+  day_2:
+    date: "2026-01-07"
+    completed_tasks: []
+    blockers: []
+    notes: ""
+
+  day_3:
+    date: "2026-01-08"
+    completed_tasks: []
+    blockers: []
+    notes: ""
+
+  day_4:
+    date: "2026-01-09"
+    completed_tasks: []
+    blockers: []
+    notes: ""
+
+  day_5:
+    date: "2026-01-10"
+    completed_tasks: []
+    blockers: []
+    notes: ""
+
+  day_6:
+    date: "2026-01-13"
+    completed_tasks: []
+    blockers: []
+    notes: "Week 2 start"
+
+  day_7:
+    date: "2026-01-14"
+    completed_tasks: []
+    blockers: []
+    notes: ""
+
+  day_8:
+    date: "2026-01-15"
+    completed_tasks: []
+    blockers: []
+    notes: ""
+
+  day_9:
+    date: "2026-01-16"
+    completed_tasks: []
+    blockers: []
+    notes: ""
+
+  day_10:
+    date: "2026-01-17"
+    completed_tasks: []
+    blockers: []
+    notes: "Sprint end - Review & Retro"
+
+# Sprint review (fill at end of sprint)
+review:
+  completed_story_points: 0
+  velocity_percentage: 0
+  features_completed: []
+  features_carried_over: []
+  demo_notes: |
+    TBD - Fill after sprint completion.
+
+# Sprint retrospective (fill at end of sprint)
+retrospective:
+  what_went_well: []
+  what_to_improve: []
+  action_items: []
+  constitution_compliance:
+    gates_passed: []
+    gates_failed: []
+    notes: |
+      Constitution gates to verify:
+      - Principle IX: /purge removes all data
+      - Principle IX: Log rotation at 10MB
+      - Principle X: HTTPS-only enforcement
+      - Principle X: No credentials in logs
+      - Principle X: TLS verification
+
+# Risks and issues
+risks:
+  - id: "RISK-001"
+    title: "HTTP workflows may break for users"
+    impact: "medium"
+    probability: "high"
+    mitigation: "Clear error message with --allow-http instruction"
+    status: "open"
+
+  - id: "RISK-002"
+    title: "Proxy configuration complexity"
+    impact: "low"
+    probability: "medium"
+    mitigation: "Document standard env vars, test with common proxies"
+    status: "open"
+
+# Sprint metrics
+metrics:
+  burndown_chart: "dev/sprints/sprint-01-burndown.png"
+  code_coverage: "0%"
+  tests_passing: "0/0"
+  bugs_found: 0
+  bugs_fixed: 0
+
+# Notes
+notes: |
+  Sprint 1 focuses on Constitution Principles IX (Privacy) and X (Security).
+
+  Key deliverables:
+  - HTTPS-only enforcement (--allow-http to override)
+  - TLS verification (--insecure to bypass with warning)
+  - Proxy support via standard environment variables
+  - /purge command and --purge flag for data cleanup
+  - Log rotation at 10MB cap
+  - No credential logging
+
+  This sprint establishes the security foundation for all future versions.
+
+  Related documents:
+  - dev/specs/features/F006-security-posture.yaml
+  - dev/specs/features/F007-privacy.yaml
+  - dev/roadmap.yaml (v0.2.0 release plan)
+  - .specify/memory/constitution.md (Principles IX, X)

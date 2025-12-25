@@ -1,0 +1,209 @@
+# GoReleaser Configuration for SafeDownload
+# https://goreleaser.com
+#
+# Constitution: v1.5.0
+# Builds multi-platform binaries for distribution
+#
+# Usage:
+#   goreleaser release --snapshot --clean  # Test build
+#   goreleaser release --clean             # Release (triggered by tag)
+
+version: 2
+
+project_name: safedownload
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: safedownload-core
+    main: ./cmd/safedownload
+    binary: safedownload-core
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - "7"
+    # Exclude windows/arm64 (limited support)
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+      - -X main.builtBy=goreleaser
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: default
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+      - docs/*
+      - safedownload # Shell wrapper
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  groups:
+    - title: "🚀 Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: "🐛 Bug Fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: "📚 Documentation"
+      regexp: '^.*?docs(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: "🧪 Tests"
+      regexp: '^.*?test(\([[:word:]]+\))??!?:.+$'
+      order: 3
+    - title: "🔧 Maintenance"
+      regexp: '^.*?(chore|ci)(\([[:word:]]+\))??!?:.+$'
+      order: 4
+    - title: "⚠️ Breaking Changes"
+      regexp: "^.*?!:.+$"
+      order: 5
+    - title: "Other"
+      order: 999
+  filters:
+    exclude:
+      - "^Merge"
+      - "^WIP"
+      - "^wip"
+
+release:
+  github:
+    owner: peternicholls
+    name: SafeDownload
+  draft: false
+  prerelease: auto
+  mode: append
+  header: |
+    ## SafeDownload {{ .Version }}
+
+    ### Installation
+
+    **macOS (Homebrew)**:
+    ```bash
+    brew install peternicholls/tap/safedownload
+    ```
+
+    **Linux/macOS (curl)**:
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/peternicholls/SafeDownload/main/install.sh | bash
+    ```
+
+    **Manual Download**: See assets below for your platform.
+
+    ### Checksums
+
+    Verify your download with SHA256 checksums in `checksums.txt`.
+
+  footer: |
+    **Full Changelog**: https://github.com/peternicholls/SafeDownload/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ---
+    Built with [GoReleaser](https://goreleaser.com).
+
+  name_template: "v{{ .Version }}"
+
+# Homebrew tap (future: F021)
+brews:
+  - name: safedownload
+    repository:
+      owner: peternicholls
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/peternicholls/SafeDownload"
+    description: "Professional download manager with resume, verification, and TUI"
+    license: "MIT"
+    skip_upload: auto # Only upload on release tags
+    dependencies:
+      - name: curl
+        type: optional
+    install: |
+      bin.install "safedownload-core"
+      bin.install "safedownload"
+    test: |
+      system "#{bin}/safedownload", "--version"
+    caveats: |
+      SafeDownload stores state in ~/.safedownload/
+
+      To get started:
+        safedownload https://example.com/file.zip
+
+# Docker images (future: F024)
+dockers:
+  - image_templates:
+      - "ghcr.io/peternicholls/safedownload:{{ .Version }}"
+      - "ghcr.io/peternicholls/safedownload:latest"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+    skip_push: auto # Enable when F024 is implemented
+
+# Announce releases (future)
+announce:
+  skip: "true" # Enable when ready
+
+# Sign releases with GPG (future: F017)
+signs:
+  - artifacts: checksum
+    args:
+      - "--batch"
+      - "--local-user"
+      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--output"
+      - "${signature}"
+      - "--detach-sign"
+      - "${artifact}"
+    stdin: "{{ .Env.GPG_PASSWORD }}"
+    # Enable when F017 is implemented
+    # skip: false
+
+# SBOM generation for supply chain security
+sboms:
+  - artifacts: archive
+    documents:
+      - "${artifact}.sbom.json"
+
+# Universal binaries for macOS (arm64 + amd64)
+universal_binaries:
+  - id: safedownload-core
+    replace: true
+    name_template: "safedownload-core"
+    # Only for macOS

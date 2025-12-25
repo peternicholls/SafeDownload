@@ -1,0 +1,174 @@
+# Feature F003: Simple TUI
+# Constitution: v1.5.0
+# Status: COMPLETED (v0.1.0)
+#
+# This is a backfilled spec documenting the implemented feature.
+
+metadata:
+  id: "F003"
+  name: "Simple TUI"
+  version: "0.1.0"
+  sprint: 0
+  status: "completed"
+  priority: "P1"
+  story_points: 8
+  created: "2025-12-24"
+  updated: "2025-12-25"
+  completed_date: "2025-12-24"
+
+description: |
+  Simple terminal user interface with emoji-based status indicators and
+  slash command interface. Provides a dashboard-like experience for managing
+  downloads without external dependencies.
+
+  Implements Constitution Principles I (Professional UX) and VI (Slash Commands).
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Professional User Experience"
+      notes: "Clean emoji-based indicators, non-intrusive"
+
+    - id: "VI"
+      name: "Slash Command Interface"
+      notes: "/help, /stop, /resume, /clear, /quit commands"
+
+    - id: "XI"
+      name: "Accessibility"
+      notes: "Emoji + text labels for status indicators"
+
+  gates:
+    - gate: "Performance"
+      requirement: "TUI startup <500ms"
+      test: "Measure time from launch to first render"
+      status: "passed"
+
+    - gate: "UX"
+      requirement: "Slash commands discoverable via /help"
+      test: "Run /help, verify command list shown"
+      status: "passed"
+
+user_stories:
+  - id: "US003-1"
+    priority: "P1"
+    title: "View download queue in TUI"
+    description: |
+      As a user,
+      I want to see my download queue in a visual interface,
+      So that I can monitor progress at a glance.
+
+    acceptance_criteria:
+      - "GIVEN downloads in queue, WHEN TUI launches, THEN queue displayed with status"
+      - "GIVEN download in progress, WHEN viewing TUI, THEN progress bar shown"
+      - "GIVEN download complete, WHEN viewing TUI, THEN ✅ indicator shown"
+
+    definition_of_done:
+      - "✅ Queue list with numbered items"
+      - "✅ Status indicators (⏳, ⬇️, ✅, ❌, ⏸️)"
+      - "✅ Progress bars with percentage"
+
+  - id: "US003-2"
+    priority: "P1"
+    title: "Control downloads via slash commands"
+    description: |
+      As a user,
+      I want to control downloads using slash commands,
+      So that I can manage the queue without leaving the TUI.
+
+    acceptance_criteria:
+      - "GIVEN /help command, WHEN entered, THEN command list shown"
+      - "GIVEN /stop N command, WHEN entered, THEN download N stopped"
+      - "GIVEN /resume N command, WHEN entered, THEN download N resumed"
+      - "GIVEN /quit command, WHEN entered, THEN TUI exits"
+
+    definition_of_done:
+      - "✅ /help shows all commands"
+      - "✅ /stop, /resume, /clear, /quit implemented"
+      - "✅ Commands operate on queue by item number"
+
+functional_requirements:
+  - id: "FR003-1"
+    description: "System MUST display queue with numbered items"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR003-2"
+    description: "System MUST use emoji status indicators"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR003-3"
+    description: "System MUST show progress bars with percentage"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR003-4"
+    description: "System MUST support /help command"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR003-5"
+    description: "System MUST support /stop, /resume, /clear, /quit"
+    priority: "MUST"
+    status: "implemented"
+
+  - id: "FR003-6"
+    description: "System MUST start in <500ms"
+    priority: "MUST"
+    status: "implemented"
+
+non_functional_requirements:
+  performance:
+    - "TUI startup <500ms"
+    - "No polling loops (event-driven updates)"
+
+  accessibility:
+    - "Emoji paired with text labels"
+    - "Works in 80-column terminals"
+
+  ux:
+    - "Clean, non-intrusive interface"
+    - "No excessive borders or flashing"
+
+implementation:
+  packages:
+    - name: "safedownload (main script)"
+      purpose: "Simple TUI rendering and command parsing"
+      files:
+        - "safedownload"
+
+  cli:
+    commands:
+      - "/help - Show available commands"
+      - "/stop N - Stop download N"
+      - "/resume N - Resume download N"
+      - "/clear - Clear completed downloads"
+      - "/clear all - Clear all except in-progress"
+      - "/quit - Exit TUI"
+
+  dependencies:
+    - "bash/zsh (built-in echo, printf)"
+
+testing:
+  implemented_tests:
+    - "TUI launches successfully"
+    - "/help displays command list"
+    - "Queue displays with status indicators"
+
+documentation:
+  readme_sections:
+    - "TUI Mode"
+    - "Slash Commands"
+
+notes: |
+  This feature was implemented as part of the initial v0.1.0 release.
+  Spec backfilled for documentation completeness.
+
+  Future enhancement (F014): Bubble Tea TUI for richer interaction.
+
+  Status Indicators:
+  - ⏳ Queued
+  - ⬇️ Downloading
+  - ✅ Completed
+  - ❌ Failed
+  - ⏸️ Paused
