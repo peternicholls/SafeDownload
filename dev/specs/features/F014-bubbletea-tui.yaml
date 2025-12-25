@@ -1,0 +1,637 @@
+metadata:
+  id: "F014"
+  name: "Bubble Tea TUI Framework"
+  version: "1.1.0"
+  sprint: "6-7"
+  status: "planned"
+  priority: "P1"
+  story_points: 13
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Replace basic terminal output with a modern Bubble Tea-based interactive TUI,
+  providing a professional dashboard experience with real-time progress updates,
+  interactive key bindings, and beautiful Lip Gloss styling.
+
+  This feature transforms SafeDownload from a CLI tool into an immersive terminal
+  application, delivering Constitution Principle I (Professional UX) at its fullest.
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Professional, Intuitive UX"
+      notes: |
+        Bubble Tea provides modern terminal UI with real-time updates,
+        keyboard navigation, and polished visual design.
+
+    - id: "VI"
+      name: "Slash Commands"
+      notes: |
+        Slash command input integrated into Bubble Tea model,
+        with autocomplete and validation.
+
+    - id: "XI"
+      name: "Accessibility"
+      notes: |
+        Theme support (light/dark/high-contrast) via Lip Gloss,
+        screen reader mode with --plain flag.
+
+  gates:
+    - gate: "Performance"
+      requirement: "TUI startup <500ms"
+      test: "tests/benchmark/tui_startup_test.go"
+
+    - gate: "Accessibility"
+      requirement: "High-contrast theme available, screen reader compatible"
+      test: "tests/e2e/accessibility_test.bats, manual testing per checklist"
+
+user_stories:
+  - id: "US014-1"
+    priority: "P1"
+    title: "Interactive dashboard layout"
+    description: |
+      As a user,
+      I want an interactive dashboard showing download status,
+      So that I can monitor and control downloads efficiently.
+
+    acceptance_criteria:
+      - "GIVEN TUI launched, WHEN displayed, THEN header shows stats (active/queued/completed/failed)"
+      - "GIVEN TUI displayed, WHEN main area shown, THEN download list with progress bars visible"
+      - "GIVEN TUI displayed, WHEN footer shown, THEN help text and slash command prompt available"
+      - "GIVEN download progress, WHEN updated, THEN real-time updates without flicker"
+
+    independent_test: |
+      1. Run: safedownload
+      2. Verify: Header shows "Active: 0 | Queued: 0 | Completed: 0 | Failed: 0"
+      3. Add download: /add https://example.com/large-file.zip
+      4. Verify: Progress bar appears in main area
+      5. Verify: Stats update as download progresses
+      6. Verify: Footer shows help text and command prompt
+
+    definition_of_done:
+      - "Bubble Tea model implemented (Model, Init, Update, View)"
+      - "Header component with real-time stats"
+      - "Main area with download list and progress bars"
+      - "Footer with help text and command input"
+      - "No flicker during updates (proper batching)"
+
+  - id: "US014-2"
+    priority: "P1"
+    title: "Keyboard navigation and bindings"
+    description: |
+      As a user,
+      I want to navigate and control downloads via keyboard,
+      So that I can work efficiently without leaving the keyboard.
+
+    acceptance_criteria:
+      - "GIVEN download list, WHEN j/k or ↓/↑ pressed, THEN selection moves"
+      - "GIVEN download selected, WHEN Enter pressed, THEN details shown"
+      - "GIVEN download selected, WHEN p pressed, THEN download paused/resumed"
+      - "GIVEN download selected, WHEN d pressed, THEN download removed (with confirmation)"
+      - "GIVEN any view, WHEN / pressed, THEN slash command input activated"
+      - "GIVEN any view, WHEN q pressed, THEN graceful exit"
+      - "GIVEN any view, WHEN ? pressed, THEN help overlay shown"
+
+    independent_test: |
+      1. Run: safedownload
+      2. Add multiple downloads
+      3. Press j: Selection moves down
+      4. Press k: Selection moves up
+      5. Press Enter: Details panel opens
+      6. Press Escape: Details panel closes
+      7. Press p: Download pauses (or resumes if paused)
+      8. Press /: Command input activated
+      9. Press q: TUI exits gracefully
+
+    definition_of_done:
+      - "Key binding map implemented (keymap.go)"
+      - "Vim-style navigation (j/k) and arrow keys"
+      - "Action keys (p=pause, d=delete, Enter=details)"
+      - "Slash command activation (/ key)"
+      - "Help overlay (? key)"
+      - "Graceful exit (q key)"
+
+  - id: "US014-3"
+    priority: "P1"
+    title: "Real-time progress updates"
+    description: |
+      As a user,
+      I want progress bars that update smoothly in real-time,
+      So that I can see download progress accurately.
+
+    acceptance_criteria:
+      - "GIVEN download in progress, WHEN progress bar shown, THEN percentage accurate to 1%"
+      - "GIVEN download in progress, WHEN speed displayed, THEN updates every 500ms"
+      - "GIVEN download in progress, WHEN ETA shown, THEN calculated from rolling average speed"
+      - "GIVEN multiple downloads, WHEN displayed, THEN all progress bars update smoothly"
+
+    independent_test: |
+      1. Add large download (100MB+)
+      2. Observe progress bar
+      3. Verify: Percentage updates smoothly (no jumps)
+      4. Verify: Speed updates every ~500ms
+      5. Verify: ETA is reasonably accurate
+      6. Add second download
+      7. Verify: Both progress bars update without flicker
+
+    definition_of_done:
+      - "Progress bar component (bubbles progress)"
+      - "Speed calculation (rolling average over 5 samples)"
+      - "ETA calculation from rolling average"
+      - "Tick updates at 100ms interval (configurable)"
+      - "Batched view updates (no flicker)"
+
+  - id: "US014-4"
+    priority: "P2"
+    title: "Theme support via Lip Gloss"
+    description: |
+      As a user,
+      I want to choose between light, dark, and high-contrast themes,
+      So that I can use SafeDownload comfortably in any environment.
+
+    acceptance_criteria:
+      - "GIVEN --theme dark, WHEN TUI shown, THEN dark color palette applied"
+      - "GIVEN --theme light, WHEN TUI shown, THEN light color palette applied"
+      - "GIVEN --theme high-contrast, WHEN TUI shown, THEN high-contrast palette applied"
+      - "GIVEN theme preference in config, WHEN TUI launched, THEN preference applied"
+      - "GIVEN /theme command, WHEN used, THEN theme changes immediately"
+
+    independent_test: |
+      1. Run: safedownload --theme light
+      2. Verify: Light theme visible (light background, dark text)
+      3. Press /theme dark
+      4. Verify: Theme changes to dark immediately
+      5. Exit and run: safedownload --theme high-contrast
+      6. Verify: High-contrast theme with bold colors
+
+    definition_of_done:
+      - "Theme system implemented (pkg/ui/theme)"
+      - "Light, dark, high-contrast palettes defined"
+      - "--theme flag and /theme command"
+      - "Theme persisted in config.json"
+      - "Lip Gloss styles applied consistently"
+
+  - id: "US014-5"
+    priority: "P2"
+    title: "Slash command integration"
+    description: |
+      As a user,
+      I want slash commands with autocomplete in the TUI,
+      So that I can quickly execute commands.
+
+    acceptance_criteria:
+      - "GIVEN / pressed, WHEN command input shown, THEN cursor in input field"
+      - "GIVEN partial command typed, WHEN Tab pressed, THEN autocomplete suggestions shown"
+      - "GIVEN command typed, WHEN Enter pressed, THEN command executed"
+      - "GIVEN invalid command, WHEN Enter pressed, THEN error message shown (non-blocking)"
+      - "GIVEN command input, WHEN Escape pressed, THEN input cancelled"
+
+    independent_test: |
+      1. Press /
+      2. Type "ad" then Tab
+      3. Verify: Autocomplete suggests "add"
+      4. Type full command: /add https://example.com/file.zip
+      5. Press Enter
+      6. Verify: Download added, command input cleared
+      7. Type invalid: /invalidcmd
+      8. Press Enter
+      9. Verify: Error toast "Unknown command: invalidcmd"
+
+    definition_of_done:
+      - "Command input component (text input bubble)"
+      - "Autocomplete for commands (add, list, rm, pause, resume, purge, theme, help)"
+      - "Command parsing and execution"
+      - "Error handling with toast notifications"
+      - "Input cancellation (Escape key)"
+
+functional_requirements:
+  - id: "FR014-1"
+    description: "System MUST use Bubble Tea for TUI framework"
+    priority: "MUST"
+    test: "TUI launches with Bubble Tea model"
+
+  - id: "FR014-2"
+    description: "System MUST provide dashboard layout (header, main, footer)"
+    priority: "MUST"
+    test: "All three regions visible and responsive"
+
+  - id: "FR014-3"
+    description: "System MUST support keyboard navigation (j/k, arrows)"
+    priority: "MUST"
+    test: "Navigation works in download list"
+
+  - id: "FR014-4"
+    description: "System MUST display real-time progress (updates every 500ms)"
+    priority: "MUST"
+    test: "Progress bars update smoothly during download"
+
+  - id: "FR014-5"
+    description: "System MUST support theme switching (light/dark/high-contrast)"
+    priority: "MUST"
+    test: "Themes apply correctly via --theme and /theme"
+
+  - id: "FR014-6"
+    description: "System MUST provide slash command input with autocomplete"
+    priority: "MUST"
+    test: "Commands execute correctly, autocomplete works"
+
+  - id: "FR014-7"
+    description: "System MUST start in <500ms (performance gate)"
+    priority: "MUST"
+    test: "Benchmark startup time in CI"
+
+  - id: "FR014-8"
+    description: "System SHOULD support mouse interactions (click to select)"
+    priority: "SHOULD"
+    test: "Mouse click selects download (if terminal supports)"
+
+non_functional_requirements:
+  performance:
+    - "TUI startup MUST be <500ms"
+    - "View render MUST be <16ms (60fps capable)"
+    - "Tick interval: 100ms for progress updates"
+    - "Memory usage MUST be <50MB for typical queue (50 downloads)"
+
+  usability:
+    - "Key bindings MUST be intuitive (Vim-style optional)"
+    - "Help MUST be accessible via ? key"
+    - "Exit MUST be possible via q or Ctrl+C"
+    - "Themes MUST be accessible to colorblind users"
+
+  accessibility:
+    - "High-contrast theme MUST meet WCAG 2.1 AA contrast ratios"
+    - "--plain flag MUST disable TUI for screen readers"
+    - "Status MUST be conveyed via text, not just color"
+
+  platform_support:
+    - "Tier 1: macOS Terminal, iTerm2, Ubuntu Terminal, Debian Terminal"
+    - "Minimum terminal size: 80x24 (graceful degradation below)"
+
+implementation:
+  packages:
+    - name: "pkg/ui/tui"
+      purpose: "Bubble Tea TUI implementation"
+      new_files:
+        - "pkg/ui/tui/model.go (main Model struct, Init, Update, View)"
+        - "pkg/ui/tui/keymap.go (key bindings)"
+        - "pkg/ui/tui/components/header.go"
+        - "pkg/ui/tui/components/download_list.go"
+        - "pkg/ui/tui/components/progress_bar.go"
+        - "pkg/ui/tui/components/footer.go"
+        - "pkg/ui/tui/components/command_input.go"
+        - "pkg/ui/tui/components/help_overlay.go"
+
+    - name: "pkg/ui/theme"
+      purpose: "Lip Gloss theme definitions"
+      new_files:
+        - "pkg/ui/theme/theme.go (Theme interface)"
+        - "pkg/ui/theme/dark.go"
+        - "pkg/ui/theme/light.go"
+        - "pkg/ui/theme/high_contrast.go"
+
+    - name: "cmd/safedownload"
+      purpose: "CLI integration"
+      modified_files:
+        - "cmd/safedownload/main.go (launch TUI by default)"
+        - "cmd/safedownload/commands/root.go (--theme flag)"
+
+  dependencies:
+    - name: "github.com/charmbracelet/bubbletea"
+      version: "v0.25.0"
+      license: "MIT"
+      justification: "Industry-standard Go TUI framework"
+
+    - name: "github.com/charmbracelet/lipgloss"
+      version: "v0.9.1"
+      license: "MIT"
+      justification: "Styling library for Bubble Tea"
+
+    - name: "github.com/charmbracelet/bubbles"
+      version: "v0.17.1"
+      license: "MIT"
+      justification: "Pre-built components (progress, text input)"
+
+  cli:
+    new_flags:
+      - flag: "--theme"
+        type: "string"
+        default: "dark"
+        description: "TUI color theme (light, dark, high-contrast)"
+
+      - flag: "--no-tui"
+        type: "boolean"
+        default: "false"
+        description: "Disable TUI, use plain output (for scripts/screen readers)"
+
+    new_commands:
+      - command: "/theme"
+        args: "<light|dark|high-contrast>"
+        description: "Switch TUI theme"
+
+  schema_changes:
+    config_json:
+      version: "1.1.0"
+      changes:
+        - type: "add"
+          field: "ui.theme"
+          data_type: "string"
+          default: "dark"
+          optional: true
+
+        - type: "add"
+          field: "ui.tick_interval_ms"
+          data_type: "integer"
+          default: 100
+          optional: true
+
+testing:
+  unit_tests:
+    - file: "pkg/ui/tui/model_test.go"
+      functions:
+        - "TestModel_Init"
+        - "TestModel_Update_KeyPress"
+        - "TestModel_Update_DownloadProgress"
+        - "TestModel_View_Render"
+      coverage_target: "80%"
+
+    - file: "pkg/ui/theme/theme_test.go"
+      functions:
+        - "TestTheme_Dark"
+        - "TestTheme_Light"
+        - "TestTheme_HighContrast"
+        - "TestTheme_ContrastRatios"
+      coverage_target: "100%"
+
+  integration_tests:
+    - file: "tests/integration/tui_test.go"
+      scenarios:
+        - "TUI launch and shutdown"
+        - "Key binding navigation"
+        - "Theme switching during runtime"
+        - "Download progress updates"
+
+  e2e_tests:
+    - file: "tests/e2e/tui_test.bats"
+      scenarios:
+        - "TUI: Launch with --theme flag"
+        - "TUI: Slash command execution"
+        - "TUI: Graceful exit (q key)"
+        - "TUI: --no-tui falls back to plain output"
+
+  benchmark_tests:
+    - file: "tests/benchmark/tui_startup_test.go"
+      scenarios:
+        - "Startup time <500ms (performance gate)"
+        - "View render time <16ms"
+        - "Memory usage with 100 downloads"
+
+  manual_tests:
+    - "Visual inspection of all three themes"
+    - "Keyboard navigation flow"
+    - "Screen reader compatibility (VoiceOver, Orca)"
+    - "Testing per dev/checklists/accessibility.md"
+
+dependencies:
+  external:
+    - name: "github.com/charmbracelet/bubbletea"
+      version: "v0.25.0"
+      license: "MIT"
+      justification: "TUI framework"
+      optional: false
+
+    - name: "github.com/charmbracelet/lipgloss"
+      version: "v0.9.1"
+      license: "MIT"
+      justification: "Styling"
+      optional: false
+
+    - name: "github.com/charmbracelet/bubbles"
+      version: "v0.17.1"
+      license: "MIT"
+      justification: "UI components"
+      optional: false
+
+  internal:
+    - feature: "F011"
+      name: "Go Core Library"
+      reason: "TUI built on Go core (pkg/state, pkg/downloader)"
+
+    - feature: "F008"
+      name: "Accessibility"
+      reason: "Theme system, screen reader support"
+
+documentation:
+  readme_sections:
+    - section: "TUI"
+      changes: |
+        Add "Terminal UI" section:
+        - Dashboard layout explanation
+        - Key bindings reference
+        - Theme configuration
+        - --no-tui for scripts
+
+  new_docs:
+    - file: "docs/TUI.md"
+      purpose: "Comprehensive TUI user guide (key bindings, themes, customization)"
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### 🎨 v1.1.0 "Bubble" - Bubble Tea TUI (Principle I)
+      - **Dashboard**: Interactive TUI with header, download list, footer
+      - **Navigation**: Vim-style (j/k) and arrow key navigation
+      - **Progress**: Real-time progress bars with speed and ETA
+      - **Themes**: Light, dark, and high-contrast themes
+      - **Commands**: Slash command input with autocomplete
+      - **Performance**: <500ms startup time
+
+edge_cases:
+  - case: "Terminal too small (<80x24)"
+    expected_behavior: "Graceful degradation: hide elements, show minimum viable UI"
+    test: "TestTUI_SmallTerminal"
+
+  - case: "Terminal resized during use"
+    expected_behavior: "TUI reflows to new dimensions"
+    test: "TestTUI_Resize"
+
+  - case: "No downloads in queue"
+    expected_behavior: "Main area shows 'No downloads. Press / to add one.'"
+    test: "TestTUI_EmptyQueue"
+
+  - case: "100+ downloads in queue"
+    expected_behavior: "Scrollable list, maintains 60fps"
+    test: "TestTUI_LargeQueue"
+
+  - case: "SSH session with limited color support"
+    expected_behavior: "Detect TERM, fall back to 16 colors if needed"
+    test: "TestTUI_LimitedColors"
+
+error_handling:
+  - error: "Terminal doesn't support required features"
+    exit_code: 1
+    retry: false
+    user_action: "Use --no-tui flag or upgrade terminal"
+
+  - error: "TUI crashes during update"
+    exit_code: 1
+    retry: false
+    user_action: "Report bug, state is saved on crash (graceful shutdown)"
+
+risks:
+  - id: "RISK014-1"
+    title: "Bubble Tea learning curve"
+    impact: "medium"
+    probability: "medium"
+    mitigation: |
+      - Follow Charm examples and best practices
+      - Start with simple components, iterate
+      - Community has extensive documentation
+
+  - id: "RISK014-2"
+    title: "Performance issues with large queues"
+    impact: "high"
+    probability: "low"
+    mitigation: |
+      - Virtual scrolling for large lists
+      - Benchmark tests in CI
+      - Profiling during development
+
+  - id: "RISK014-3"
+    title: "Accessibility regressions"
+    impact: "high"
+    probability: "medium"
+    mitigation: |
+      - Follow dev/checklists/accessibility.md
+      - Test with screen readers before release
+      - --no-tui fallback always available
+
+alternatives:
+  - approach: "Keep current simple TUI (no Bubble Tea)"
+    pros:
+      - "No new dependencies"
+      - "Simpler maintenance"
+    cons:
+      - "Limited interactivity"
+      - "Poor UX compared to modern TUI apps"
+    reason_rejected: "Constitution Principle I requires professional UX"
+
+  - approach: "Use tview instead of Bubble Tea"
+    pros:
+      - "Also popular Go TUI library"
+      - "Widget-based approach"
+    cons:
+      - "Less modern feel"
+      - "Charm ecosystem has better styling (Lip Gloss)"
+    reason_rejected: "Bubble Tea + Lip Gloss provides best visual experience"
+
+success_criteria:
+  quantitative:
+    - "TUI startup <500ms (100% of runs)"
+    - "View render <16ms (60fps capable)"
+    - "Memory <50MB for 50 downloads"
+    - "80%+ code coverage for TUI package"
+
+  qualitative:
+    - "Users describe TUI as 'professional' and 'intuitive'"
+    - "Key bindings feel natural"
+    - "Themes visually appealing"
+    - "Accessible to screen reader users"
+
+sprint_tasks:
+  planning:
+    - task: "T014-001"
+      description: "Design TUI layout and component hierarchy"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  implementation:
+    - task: "T014-002"
+      description: "Implement Bubble Tea model (Init, Update, View)"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T014-003"
+      description: "Implement header component (stats display)"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T014-004"
+      description: "Implement download list component (with progress bars)"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T014-005"
+      description: "Implement footer component (help, command input)"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T014-006"
+      description: "Implement key bindings (navigation, actions)"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T014-007"
+      description: "Implement theme system (light, dark, high-contrast)"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T014-008"
+      description: "Implement slash command input with autocomplete"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T014-009"
+      description: "Write unit tests for TUI components"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T014-010"
+      description: "Write benchmark tests (startup, render)"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+    - task: "T014-011"
+      description: "Manual accessibility testing per checklist"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+  documentation:
+    - task: "T014-012"
+      description: "Create docs/TUI.md user guide"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+notes: |
+  Constitution Compliance: This feature delivers Principle I (Professional UX)
+  at its fullest with a modern, interactive terminal UI that rivals GUI applications.
+
+  Architecture Notes:
+  - Bubble Tea follows Elm architecture (Model, Update, View)
+  - Model holds all TUI state (downloads, selection, theme, input)
+  - Update handles all messages (key presses, ticks, download updates)
+  - View renders current state to terminal
+
+  Key Binding Philosophy:
+  - Vim-style (j/k) for power users
+  - Arrow keys for beginners
+  - Single-key actions (p=pause, d=delete, q=quit)
+  - / for command input (like vim command mode)
+  - ? for help (standard convention)
+
+  Theme Design:
+  - Dark: Default, easy on eyes for extended use
+  - Light: For bright environments
+  - High-contrast: Accessibility, meets WCAG 2.1 AA
+
+  Performance Budget:
+  - Startup: <500ms (constitution gate)
+  - Render: <16ms (60fps capable)
+  - Tick: 100ms (progress updates)
+  - Memory: <50MB for typical use
+
+  See also:
+  - dev/architecture/tui-stack.md (TUI architecture details)
+  - dev/checklists/accessibility.md (accessibility testing)
+  - F008 Accessibility (theme system foundation)

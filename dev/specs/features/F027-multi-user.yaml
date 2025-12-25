@@ -1,0 +1,369 @@
+metadata:
+  id: "F027"
+  name: "Multi-User Support"
+  version: "2.0.0"
+  sprint: 20-21
+  status: "planned"
+  priority: "P4"
+  story_points: 13
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Add multi-user capabilities to SafeDownload server mode, enabling shared
+  access with per-user queues, authentication, permissions, and resource quotas.
+
+  This enables team and family deployments where multiple users share a single
+  SafeDownload instance while maintaining isolation and resource fairness.
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Privacy First"
+      notes: "User data isolated, one user cannot see another's downloads"
+    - id: "VII"
+      name: "Respect Boundaries"
+      notes: "Permissions enforce access control"
+
+user_stories:
+  - id: "US027-1"
+    priority: "P4"
+    title: "Create user accounts"
+    description: |
+      As an administrator,
+      I want to create user accounts,
+      So that multiple people can use SafeDownload.
+
+    acceptance_criteria:
+      - "GIVEN admin access, WHEN create user, THEN user account created"
+      - "GIVEN user created, WHEN user logs in, THEN access granted"
+      - "GIVEN admin, WHEN list users, THEN all users displayed"
+
+    independent_test: |
+      1. Login as admin
+      2. Run: safedownload user create --name alice --password secret
+      3. Verify: User alice created
+      4. Login as alice
+      5. Verify: Dashboard accessible
+
+    definition_of_done:
+      - "User creation works"
+      - "User listing works"
+      - "User authentication works"
+
+  - id: "US027-2"
+    priority: "P4"
+    title: "Per-user download queues"
+    description: |
+      As a user,
+      I want my own download queue,
+      So that I can manage my downloads independently.
+
+    acceptance_criteria:
+      - "GIVEN logged in, WHEN view queue, THEN only my downloads shown"
+      - "GIVEN user A downloads, WHEN user B views queue, THEN A's downloads not visible"
+      - "GIVEN my download, WHEN I pause it, THEN only my download affected"
+
+    independent_test: |
+      1. Login as alice, queue download
+      2. Login as bob (different session)
+      3. Verify: Bob's queue is empty
+      4. Queue download as bob
+      5. Switch to alice's session
+      6. Verify: Alice only sees her download
+
+    definition_of_done:
+      - "Downloads isolated per user"
+      - "Queue filtering works"
+      - "Cross-user access denied"
+
+  - id: "US027-3"
+    priority: "P4"
+    title: "User roles and permissions"
+    description: |
+      As an administrator,
+      I want to assign roles to users,
+      So that I can control what they can do.
+
+    acceptance_criteria:
+      - "GIVEN admin, WHEN assign role, THEN user has role permissions"
+      - "GIVEN regular user, WHEN try admin action, THEN permission denied"
+      - "GIVEN roles defined, WHEN check permission, THEN correct access"
+
+    independent_test: |
+      1. Create user with 'user' role
+      2. Try to create another user
+      3. Verify: Permission denied
+      4. Admin promotes user to 'admin' role
+      5. Try to create another user
+      6. Verify: Action succeeds
+
+    definition_of_done:
+      - "Roles: admin, user, viewer"
+      - "Permission checks enforce roles"
+      - "Role assignment works"
+
+  - id: "US027-4"
+    priority: "P4"
+    title: "Resource quotas"
+    description: |
+      As an administrator,
+      I want to set resource quotas per user,
+      So that one user cannot monopolize bandwidth or storage.
+
+    acceptance_criteria:
+      - "GIVEN quota set, WHEN user exceeds, THEN download blocked"
+      - "GIVEN bandwidth limit, WHEN downloading, THEN speed capped"
+      - "GIVEN storage quota, WHEN exceeded, THEN new downloads rejected"
+
+    independent_test: |
+      1. Set user quota: 1GB storage, 10MB/s bandwidth
+      2. Download 500MB file
+      3. Verify: Download succeeds, within bandwidth limit
+      4. Check storage: 500MB used of 1GB
+      5. Try to download 600MB file
+      6. Verify: Rejected (would exceed quota)
+
+    definition_of_done:
+      - "Storage quotas enforced"
+      - "Bandwidth limits work"
+      - "Quota status visible"
+
+  - id: "US027-5"
+    priority: "P4"
+    title: "Admin dashboard"
+    description: |
+      As an administrator,
+      I want an admin dashboard,
+      So that I can manage users and monitor system health.
+
+    acceptance_criteria:
+      - "GIVEN admin login, WHEN view admin panel, THEN user management visible"
+      - "GIVEN admin panel, WHEN view stats, THEN system-wide metrics shown"
+      - "GIVEN users active, WHEN view activity, THEN all user activity visible"
+
+    independent_test: |
+      1. Login as admin
+      2. Navigate to Admin panel
+      3. Verify: User list displayed
+      4. Verify: System statistics visible
+      5. Verify: Recent activity log
+
+    definition_of_done:
+      - "Admin panel accessible to admins only"
+      - "User management UI"
+      - "System-wide statistics"
+
+functional_requirements:
+  - id: "FR027-1"
+    description: "System MUST support user accounts"
+    priority: "MUST"
+    test: "Users can be created and authenticated"
+
+  - id: "FR027-2"
+    description: "System MUST isolate user data"
+    priority: "MUST"
+    test: "Users cannot see others' downloads"
+
+  - id: "FR027-3"
+    description: "System MUST enforce permissions"
+    priority: "MUST"
+    test: "Role-based access control works"
+
+  - id: "FR027-4"
+    description: "System SHOULD support quotas"
+    priority: "SHOULD"
+    test: "Quota limits enforced"
+
+  - id: "FR027-5"
+    description: "System SHOULD provide admin dashboard"
+    priority: "SHOULD"
+    test: "Admin UI functional"
+
+implementation:
+  packages:
+    - name: "internal/user"
+      purpose: "User management"
+      files:
+        - "user.go (user model)"
+        - "service.go (user service)"
+        - "repository.go (user storage)"
+
+    - name: "internal/auth"
+      purpose: "Authentication updates"
+      files:
+        - "session.go (session management)"
+        - "rbac.go (role-based access)"
+
+    - name: "internal/quota"
+      purpose: "Resource quotas"
+      files:
+        - "quota.go (quota model)"
+        - "enforcer.go (quota enforcement)"
+        - "tracker.go (usage tracking)"
+
+  database:
+    tables:
+      users: |
+        - id: UUID
+        - username: string (unique)
+        - password_hash: string
+        - role: enum (admin, user, viewer)
+        - created_at: timestamp
+        - updated_at: timestamp
+
+      quotas: |
+        - user_id: UUID (FK users)
+        - storage_limit: int64 (bytes)
+        - storage_used: int64 (bytes)
+        - bandwidth_limit: int64 (bytes/sec)
+
+      downloads: |
+        - (existing fields)
+        - user_id: UUID (FK users)
+
+  roles:
+    admin:
+      - "Create/delete users"
+      - "Assign roles"
+      - "Set quotas"
+      - "View all downloads"
+      - "System configuration"
+
+    user:
+      - "Create/manage own downloads"
+      - "View own statistics"
+      - "Update own profile"
+
+    viewer:
+      - "View own downloads (read-only)"
+      - "Cannot create/modify downloads"
+
+  cli_commands:
+    user:
+      subcommands:
+        - "create --name NAME --password PASS [--role ROLE]"
+        - "delete NAME"
+        - "list"
+        - "set-role NAME ROLE"
+        - "set-quota NAME --storage SIZE --bandwidth RATE"
+
+testing:
+  unit_tests:
+    coverage_target: 80
+    areas:
+      - "User service"
+      - "Permission checks"
+      - "Quota enforcement"
+
+  integration_tests:
+    - "Multi-user workflow"
+    - "Quota limit enforcement"
+    - "Role permission boundaries"
+
+  manual_tests:
+    - "Create multiple users"
+    - "Test data isolation"
+    - "Test quota limits"
+    - "Test role permissions"
+
+documentation:
+  readme_sections:
+    - section: "Multi-User Mode"
+      changes: |
+        Add multi-user documentation:
+
+        ## Multi-User Mode
+
+        SafeDownload supports multiple users with isolated queues.
+
+        ```bash
+        # Create first admin user
+        safedownload serve --init-admin
+
+        # Create additional users
+        safedownload user create --name alice --role user
+
+        # Set quotas
+        safedownload user set-quota alice --storage 10GB --bandwidth 10MB/s
+        ```
+
+        ### Roles
+        - **admin**: Full system access
+        - **user**: Manage own downloads
+        - **viewer**: Read-only access
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### Multi-User Support (v2.0.0)
+      - User accounts with authentication
+      - Per-user isolated download queues
+      - Role-based permissions (admin, user, viewer)
+      - Resource quotas (storage, bandwidth)
+      - Admin dashboard for user management
+
+sprint_tasks:
+  implementation:
+    - task: "T027-001"
+      description: "Implement user model and storage"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T027-002"
+      description: "Implement user authentication flow"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T027-003"
+      description: "Implement per-user download isolation"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T027-004"
+      description: "Implement RBAC permission system"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T027-005"
+      description: "Implement quota enforcement"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T027-006"
+      description: "Build admin dashboard UI"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+  testing:
+    - task: "T027-007"
+      description: "Write unit tests (80% coverage)"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  documentation:
+    - task: "T027-008"
+      description: "Write multi-user documentation"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Security considerations:
+  - Passwords hashed with bcrypt
+  - Session tokens with expiration
+  - Failed login rate limiting
+  - Audit logging for admin actions
+
+  Deployment scenarios:
+  - Family server: shared home NAS
+  - Team deployment: shared download server
+  - Public service: hosted instance (future)
+
+  Database options:
+  - SQLite for single-server (default)
+  - PostgreSQL for larger deployments
+
+  Future enhancements:
+  - LDAP/OAuth integration
+  - API keys per user
+  - Usage reporting

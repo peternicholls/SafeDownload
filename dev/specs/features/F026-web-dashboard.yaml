@@ -1,0 +1,373 @@
+metadata:
+  id: "F026"
+  name: "Web Dashboard"
+  version: "2.0.0"
+  sprint: 17-19
+  status: "planned"
+  priority: "P4"
+  story_points: 21
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Create a web-based dashboard for SafeDownload, providing a graphical
+  interface for managing downloads from any browser. Built as a single-page
+  application (SPA) that communicates with the REST API server.
+
+  The dashboard offers real-time visualization, drag-and-drop URL handling,
+  and mobile-responsive design.
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Privacy First"
+      notes: "Dashboard hosted locally, no external dependencies at runtime"
+    - id: "IV"
+      name: "Accessibility"
+      notes: "WCAG 2.1 AA compliance for web interface"
+    - id: "V"
+      name: "Predictable Output"
+      notes: "Consistent UI patterns across all views"
+
+user_stories:
+  - id: "US026-1"
+    priority: "P4"
+    title: "Access web dashboard"
+    description: |
+      As a user,
+      I want to access SafeDownload via web browser,
+      So that I can manage downloads graphically.
+
+    acceptance_criteria:
+      - "GIVEN server running, WHEN browse to http://localhost:8080, THEN dashboard loads"
+      - "GIVEN dashboard loaded, WHEN authenticated, THEN queue visible"
+      - "GIVEN mobile device, WHEN access dashboard, THEN responsive layout"
+
+    independent_test: |
+      1. Start: safedownload serve
+      2. Open browser: http://localhost:8080
+      3. Verify: Login page displayed
+      4. Login with token
+      5. Verify: Dashboard with queue visible
+
+    definition_of_done:
+      - "Dashboard loads in browser"
+      - "Authentication works"
+      - "Responsive design implemented"
+
+  - id: "US026-2"
+    priority: "P4"
+    title: "View download queue"
+    description: |
+      As a user,
+      I want to see all downloads in a visual queue,
+      So that I can monitor progress at a glance.
+
+    acceptance_criteria:
+      - "GIVEN downloads queued, WHEN view dashboard, THEN all downloads listed"
+      - "GIVEN download in progress, WHEN watching, THEN progress bar updates"
+      - "GIVEN download complete, WHEN complete, THEN status shows success"
+
+    independent_test: |
+      1. Queue multiple downloads via CLI or API
+      2. Open dashboard
+      3. Verify: All downloads listed
+      4. Verify: Progress bars animate
+      5. Wait for completion
+      6. Verify: Checkmarks appear
+
+    definition_of_done:
+      - "Queue list displays all downloads"
+      - "Progress bars update in real-time"
+      - "Status indicators are clear"
+
+  - id: "US026-3"
+    priority: "P4"
+    title: "Add downloads via dashboard"
+    description: |
+      As a user,
+      I want to add downloads through the dashboard,
+      So that I can use SafeDownload without CLI.
+
+    acceptance_criteria:
+      - "GIVEN dashboard, WHEN paste URL and click Add, THEN download queued"
+      - "GIVEN dashboard, WHEN drag URL to queue, THEN download queued"
+      - "GIVEN download options, WHEN set destination, THEN respected"
+
+    independent_test: |
+      1. Open dashboard
+      2. Click "Add Download"
+      3. Paste URL: https://example.com/file.zip
+      4. Click "Add"
+      5. Verify: Download appears in queue
+
+    definition_of_done:
+      - "URL input form works"
+      - "Drag-and-drop works"
+      - "Download options configurable"
+
+  - id: "US026-4"
+    priority: "P4"
+    title: "Control downloads via dashboard"
+    description: |
+      As a user,
+      I want to pause/resume/cancel downloads via dashboard,
+      So that I can control downloads visually.
+
+    acceptance_criteria:
+      - "GIVEN active download, WHEN click pause, THEN download pauses"
+      - "GIVEN paused download, WHEN click resume, THEN download resumes"
+      - "GIVEN any download, WHEN click cancel, THEN download removed"
+
+    independent_test: |
+      1. Start a large download
+      2. Click pause button
+      3. Verify: Progress stops
+      4. Click resume button
+      5. Verify: Progress continues
+      6. Click cancel button
+      7. Verify: Download removed from queue
+
+    definition_of_done:
+      - "Pause button works"
+      - "Resume button works"
+      - "Cancel button with confirmation works"
+
+  - id: "US026-5"
+    priority: "P4"
+    title: "Dashboard statistics"
+    description: |
+      As a user,
+      I want to see download statistics,
+      So that I can understand my usage patterns.
+
+    acceptance_criteria:
+      - "GIVEN dashboard, WHEN view stats, THEN total downloads shown"
+      - "GIVEN activity, WHEN view stats, THEN bandwidth usage shown"
+      - "GIVEN history, WHEN view history, THEN completed downloads listed"
+
+    independent_test: |
+      1. Complete several downloads
+      2. Navigate to Statistics page
+      3. Verify: Total count, data transferred displayed
+      4. Navigate to History page
+      5. Verify: Completed downloads listed
+
+    definition_of_done:
+      - "Statistics page implemented"
+      - "History view implemented"
+      - "Charts/graphs for visualization"
+
+functional_requirements:
+  - id: "FR026-1"
+    description: "System MUST serve web dashboard from same server"
+    priority: "MUST"
+    test: "Browser loads dashboard"
+
+  - id: "FR026-2"
+    description: "System MUST display download queue"
+    priority: "MUST"
+    test: "Queue visible with status"
+
+  - id: "FR026-3"
+    description: "System MUST support real-time updates"
+    priority: "MUST"
+    test: "Progress updates without refresh"
+
+  - id: "FR026-4"
+    description: "System MUST be mobile-responsive"
+    priority: "MUST"
+    test: "Dashboard usable on mobile"
+
+  - id: "FR026-5"
+    description: "System MUST meet WCAG 2.1 AA accessibility"
+    priority: "MUST"
+    test: "Lighthouse accessibility score >= 90"
+
+  - id: "FR026-6"
+    description: "System SHOULD support dark mode"
+    priority: "SHOULD"
+    test: "Dark mode toggle works"
+
+implementation:
+  technology:
+    framework: "React 18 with TypeScript (or Vue 3)"
+    styling: "Tailwind CSS"
+    state: "Zustand or Pinia"
+    bundler: "Vite"
+    testing: "Vitest + React Testing Library"
+
+  packages:
+    - name: "web/"
+      purpose: "Web dashboard SPA"
+      files:
+        - "src/App.tsx (main component)"
+        - "src/components/ (UI components)"
+        - "src/pages/ (page components)"
+        - "src/hooks/ (custom hooks)"
+        - "src/api/ (API client)"
+        - "src/store/ (state management)"
+
+  components:
+    layout:
+      - "Header (nav, user menu)"
+      - "Sidebar (navigation)"
+      - "Main content area"
+
+    pages:
+      - "Dashboard (queue overview)"
+      - "Downloads (detailed queue)"
+      - "History (completed downloads)"
+      - "Statistics (charts/graphs)"
+      - "Settings (preferences)"
+
+    shared:
+      - "DownloadCard (single download)"
+      - "ProgressBar (animated)"
+      - "URLInput (add download)"
+      - "ConfirmDialog (actions)"
+      - "Toast (notifications)"
+
+  embedding:
+    method: "go:embed"
+    details: |
+      // In Go server
+      //go:embed web/dist/*
+      var webAssets embed.FS
+
+      // Serve static files
+      http.Handle("/", http.FileServer(http.FS(webAssets)))
+
+testing:
+  unit_tests:
+    coverage_target: 80
+    areas:
+      - "Component rendering"
+      - "State management"
+      - "API client"
+
+  e2e_tests:
+    framework: "Playwright"
+    tests:
+      - "Login flow"
+      - "Add download"
+      - "Pause/resume"
+      - "Mobile viewport"
+
+  accessibility_tests:
+    - "Lighthouse accessibility audit"
+    - "axe-core automated testing"
+    - "Screen reader testing"
+
+documentation:
+  readme_sections:
+    - section: "Web Dashboard"
+      changes: |
+        Add dashboard documentation:
+
+        ## Web Dashboard
+
+        SafeDownload includes a web-based dashboard for graphical management.
+
+        ```bash
+        # Start server with dashboard
+        safedownload serve
+
+        # Open in browser
+        open http://localhost:8080
+        ```
+
+        ### Features
+        - Real-time download progress
+        - Drag-and-drop URL adding
+        - Mobile-responsive design
+        - Dark mode support
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### Web Dashboard (v2.0.0)
+      - Web-based download management interface
+      - Real-time progress visualization
+      - Mobile-responsive design
+      - Dark mode support
+      - WCAG 2.1 AA accessible
+
+sprint_tasks:
+  implementation:
+    - task: "T026-001"
+      description: "Set up React/Vite project structure"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T026-002"
+      description: "Implement authentication/login flow"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T026-003"
+      description: "Build dashboard layout and navigation"
+      assignee: "@peternicholls"
+      estimate: "3 SP"
+
+    - task: "T026-004"
+      description: "Implement download queue view"
+      assignee: "@peternicholls"
+      estimate: "3 SP"
+
+    - task: "T026-005"
+      description: "Implement real-time WebSocket updates"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T026-006"
+      description: "Build download control UI"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T026-007"
+      description: "Implement statistics and history pages"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T026-008"
+      description: "Add dark mode and accessibility"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T026-009"
+      description: "Write unit tests (80% coverage)"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T026-010"
+      description: "Write E2E tests with Playwright"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  documentation:
+    - task: "T026-011"
+      description: "Write dashboard user guide"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+notes: |
+  Technology decisions:
+  - React chosen for ecosystem and hiring pool
+  - Alternative: Vue 3 if team prefers
+  - Tailwind for rapid styling
+  - Embedded in Go binary via go:embed
+
+  Accessibility requirements (Constitution IV):
+  - Full keyboard navigation
+  - Screen reader compatible
+  - Minimum contrast ratios
+  - Focus indicators
+  - ARIA labels
+
+  Mobile considerations:
+  - Touch-friendly buttons (44px minimum)
+  - Swipe gestures for actions
+  - Responsive breakpoints
+  - PWA support (future)

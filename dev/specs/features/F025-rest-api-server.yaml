@@ -1,0 +1,372 @@
+metadata:
+  id: "F025"
+  name: "REST API Server"
+  version: "2.0.0"
+  sprint: 14-16
+  status: "planned"
+  priority: "P4"
+  story_points: 21
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Transform SafeDownload into a server with a RESTful API, enabling remote
+  management of downloads via HTTP. This enables web dashboards, mobile apps,
+  and programmatic integration.
+
+  The server mode runs as a background daemon, exposing endpoints for queue
+  management, download control, and real-time status via WebSocket.
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Privacy First"
+      notes: "Server binds to localhost by default, remote access opt-in"
+    - id: "V"
+      name: "Predictable Output"
+      notes: "JSON responses follow consistent schema"
+    - id: "VII"
+      name: "Respect Boundaries"
+      notes: "Authentication required for all operations"
+
+user_stories:
+  - id: "US025-1"
+    priority: "P4"
+    title: "Start server mode"
+    description: |
+      As a power user,
+      I want to start SafeDownload in server mode,
+      So that I can manage downloads remotely.
+
+    acceptance_criteria:
+      - "GIVEN CLI, WHEN safedownload serve, THEN server starts on localhost:8080"
+      - "GIVEN server running, WHEN GET /api/health, THEN 200 OK returned"
+      - "GIVEN custom port, WHEN safedownload serve --port 9000, THEN binds to 9000"
+
+    independent_test: |
+      1. Run: safedownload serve &
+      2. Run: curl http://localhost:8080/api/health
+      3. Verify: {"status": "ok"} returned
+      4. Stop server
+
+    definition_of_done:
+      - "Server starts and listens"
+      - "Health endpoint responds"
+      - "Graceful shutdown works"
+
+  - id: "US025-2"
+    priority: "P4"
+    title: "Queue downloads via API"
+    description: |
+      As a developer,
+      I want to queue downloads via REST API,
+      So that I can integrate SafeDownload into my workflows.
+
+    acceptance_criteria:
+      - "GIVEN server running, WHEN POST /api/downloads, THEN download queued"
+      - "GIVEN download queued, WHEN GET /api/downloads/:id, THEN status returned"
+      - "GIVEN downloads active, WHEN GET /api/downloads, THEN list returned"
+
+    independent_test: |
+      1. POST: curl -X POST -H "Authorization: Bearer $TOKEN" \
+           -d '{"url": "https://example.com/file.zip"}' \
+           http://localhost:8080/api/downloads
+      2. Verify: {"id": "abc123", "status": "queued"} returned
+      3. GET: curl http://localhost:8080/api/downloads/abc123
+      4. Verify: Download status with progress
+
+    definition_of_done:
+      - "POST creates download"
+      - "GET returns download status"
+      - "LIST returns all downloads"
+
+  - id: "US025-3"
+    priority: "P4"
+    title: "Control downloads via API"
+    description: |
+      As a developer,
+      I want to pause/resume/cancel downloads via API,
+      So that I can control downloads programmatically.
+
+    acceptance_criteria:
+      - "GIVEN active download, WHEN POST /api/downloads/:id/pause, THEN download paused"
+      - "GIVEN paused download, WHEN POST /api/downloads/:id/resume, THEN download resumes"
+      - "GIVEN any download, WHEN DELETE /api/downloads/:id, THEN download cancelled"
+
+    independent_test: |
+      1. Queue a download
+      2. POST: curl -X POST http://localhost:8080/api/downloads/abc123/pause
+      3. Verify: {"status": "paused"}
+      4. POST: curl -X POST http://localhost:8080/api/downloads/abc123/resume
+      5. Verify: {"status": "downloading"}
+
+    definition_of_done:
+      - "Pause endpoint works"
+      - "Resume endpoint works"
+      - "Cancel endpoint works"
+
+  - id: "US025-4"
+    priority: "P4"
+    title: "Real-time updates via WebSocket"
+    description: |
+      As a web developer,
+      I want real-time progress updates,
+      So that my UI updates without polling.
+
+    acceptance_criteria:
+      - "GIVEN WebSocket connected, WHEN download progresses, THEN event sent"
+      - "GIVEN download completes, WHEN complete, THEN completion event sent"
+      - "GIVEN error occurs, WHEN error, THEN error event sent"
+
+    independent_test: |
+      1. Connect: wscat -c ws://localhost:8080/api/ws
+      2. Queue download via REST
+      3. Verify: Progress events received
+      4. Verify: Completion event received
+
+    definition_of_done:
+      - "WebSocket endpoint available"
+      - "Progress events stream"
+      - "Event schema documented"
+
+  - id: "US025-5"
+    priority: "P4"
+    title: "API authentication"
+    description: |
+      As a security-conscious user,
+      I want API authentication,
+      So that only authorized clients can manage downloads.
+
+    acceptance_criteria:
+      - "GIVEN no token, WHEN API request, THEN 401 Unauthorized"
+      - "GIVEN valid token, WHEN API request, THEN request succeeds"
+      - "GIVEN server start, WHEN --generate-token, THEN token generated"
+
+    independent_test: |
+      1. Start server: safedownload serve --generate-token
+      2. Note token from output
+      3. Request without token: curl http://localhost:8080/api/downloads
+      4. Verify: 401 Unauthorized
+      5. Request with token: curl -H "Authorization: Bearer $TOKEN" ...
+      6. Verify: 200 OK
+
+    definition_of_done:
+      - "JWT/bearer token authentication"
+      - "Token generation command"
+      - "All endpoints require authentication"
+
+functional_requirements:
+  - id: "FR025-1"
+    description: "System MUST provide HTTP server mode"
+    priority: "MUST"
+    test: "Server starts and accepts connections"
+
+  - id: "FR025-2"
+    description: "System MUST provide RESTful API for downloads"
+    priority: "MUST"
+    test: "CRUD operations work via API"
+
+  - id: "FR025-3"
+    description: "System MUST require authentication"
+    priority: "MUST"
+    test: "Unauthenticated requests rejected"
+
+  - id: "FR025-4"
+    description: "System SHOULD provide WebSocket for real-time updates"
+    priority: "SHOULD"
+    test: "Progress events stream to connected clients"
+
+  - id: "FR025-5"
+    description: "System MUST bind to localhost by default"
+    priority: "MUST"
+    test: "Remote connections rejected without --bind flag"
+
+  - id: "FR025-6"
+    description: "System SHOULD support HTTPS"
+    priority: "SHOULD"
+    test: "TLS configuration works"
+
+implementation:
+  packages:
+    - name: "internal/server"
+      purpose: "HTTP server implementation"
+      files:
+        - "server.go (main server)"
+        - "router.go (route definitions)"
+        - "middleware.go (auth, logging)"
+
+    - name: "internal/api"
+      purpose: "API handlers"
+      files:
+        - "downloads.go (download endpoints)"
+        - "queue.go (queue endpoints)"
+        - "websocket.go (WebSocket handler)"
+        - "health.go (health check)"
+
+    - name: "internal/auth"
+      purpose: "Authentication"
+      files:
+        - "jwt.go (JWT generation/validation)"
+        - "token.go (token management)"
+
+  api_schema:
+    openapi: "3.0.0"
+    paths:
+      "/api/health":
+        get:
+          summary: "Health check"
+          responses:
+            200: { description: "OK" }
+
+      "/api/downloads":
+        get:
+          summary: "List all downloads"
+          security: [bearerAuth: []]
+        post:
+          summary: "Queue new download"
+          security: [bearerAuth: []]
+
+      "/api/downloads/{id}":
+        get:
+          summary: "Get download status"
+          security: [bearerAuth: []]
+        delete:
+          summary: "Cancel download"
+          security: [bearerAuth: []]
+
+      "/api/downloads/{id}/pause":
+        post:
+          summary: "Pause download"
+          security: [bearerAuth: []]
+
+      "/api/downloads/{id}/resume":
+        post:
+          summary: "Resume download"
+          security: [bearerAuth: []]
+
+      "/api/ws":
+        websocket:
+          summary: "Real-time events"
+          security: [bearerAuth: []]
+
+  cli_commands:
+    serve:
+      usage: "safedownload serve [flags]"
+      flags:
+        - "--port, -p (default: 8080)"
+        - "--bind (default: 127.0.0.1)"
+        - "--generate-token"
+        - "--tls-cert, --tls-key"
+
+testing:
+  unit_tests:
+    coverage_target: 80
+    areas:
+      - "Handler functions"
+      - "JWT validation"
+      - "Route matching"
+
+  integration_tests:
+    - "Full API workflow"
+    - "WebSocket events"
+    - "Authentication flows"
+
+  manual_tests:
+    - "Start server, use Postman"
+    - "Connect with wscat"
+    - "Test token generation"
+
+documentation:
+  readme_sections:
+    - section: "Server Mode"
+      changes: |
+        Add API documentation:
+        ```bash
+        # Start server
+        safedownload serve --generate-token
+
+        # Queue download
+        curl -X POST -H "Authorization: Bearer $TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{"url": "https://example.com/file.zip"}' \
+          http://localhost:8080/api/downloads
+        ```
+
+  api_docs:
+    format: "OpenAPI 3.0"
+    location: "docs/api.yaml"
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### REST API Server (v2.0.0)
+      - HTTP server mode with RESTful API
+      - WebSocket for real-time updates
+      - JWT authentication
+      - Full download control via API
+
+sprint_tasks:
+  implementation:
+    - task: "T025-001"
+      description: "Implement HTTP server with routing"
+      assignee: "@peternicholls"
+      estimate: "3 SP"
+
+    - task: "T025-002"
+      description: "Implement download CRUD endpoints"
+      assignee: "@peternicholls"
+      estimate: "4 SP"
+
+    - task: "T025-003"
+      description: "Implement download control endpoints"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T025-004"
+      description: "Implement WebSocket handler"
+      assignee: "@peternicholls"
+      estimate: "3 SP"
+
+    - task: "T025-005"
+      description: "Implement JWT authentication"
+      assignee: "@peternicholls"
+      estimate: "3 SP"
+
+    - task: "T025-006"
+      description: "Add TLS support"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T025-007"
+      description: "Write unit tests (80% coverage)"
+      assignee: "@peternicholls"
+      estimate: "3 SP"
+
+    - task: "T025-008"
+      description: "Write integration tests"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  documentation:
+    - task: "T025-009"
+      description: "Write OpenAPI specification"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+notes: |
+  Security considerations:
+  - Localhost binding by default (constitution principle I)
+  - Authentication required for all operations
+  - HTTPS recommended for remote access
+  - Token rotation supported
+
+  Technology stack:
+  - Go stdlib net/http (or chi/echo for routing)
+  - gorilla/websocket for WebSocket
+  - golang-jwt/jwt for authentication
+
+  Future considerations:
+  - Rate limiting
+  - API versioning (/api/v1/)
+  - OpenTelemetry tracing

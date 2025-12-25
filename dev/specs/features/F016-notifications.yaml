@@ -1,0 +1,271 @@
+metadata:
+  id: "F016"
+  name: "Real-Time Notifications"
+  version: "1.1.0"
+  sprint: 8
+  status: "planned"
+  priority: "P3"
+  story_points: 5
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Add notification system for download events including toast notifications
+  in the TUI, optional desktop notifications, and configurable sound alerts.
+
+  This feature completes the v1.1.0 "Bubble" release by providing feedback
+  mechanisms that keep users informed without requiring constant attention.
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Professional, Intuitive UX"
+      notes: "Notifications keep users informed of important events"
+
+    - id: "II"
+      name: "Zero-Configuration & Optional Features"
+      notes: "Desktop notifications and sounds are opt-in"
+
+  gates:
+    - gate: "Privacy"
+      requirement: "No notification content sent to external services"
+      test: "Verify notifications are local-only"
+
+user_stories:
+  - id: "US016-1"
+    priority: "P3"
+    title: "Toast notifications in TUI"
+    description: |
+      As a user,
+      I want toast notifications for download events,
+      So that I'm informed without leaving the TUI.
+
+    acceptance_criteria:
+      - "GIVEN download completes, WHEN event occurs, THEN toast shown '✓ filename downloaded'"
+      - "GIVEN download fails, WHEN event occurs, THEN toast shown '✗ filename failed: reason'"
+      - "GIVEN checksum mismatch, WHEN detected, THEN toast shown '⚠ filename checksum mismatch'"
+      - "GIVEN toast shown, WHEN 5 seconds pass, THEN toast auto-dismisses"
+      - "GIVEN multiple toasts, WHEN shown, THEN stack vertically (max 3 visible)"
+
+    independent_test: |
+      1. Add download that will complete quickly
+      2. Wait for completion
+      3. Verify: Toast appears "✓ file.zip downloaded"
+      4. Wait 5 seconds
+      5. Verify: Toast disappears
+      6. Trigger failed download
+      7. Verify: Error toast appears with red styling
+
+    definition_of_done:
+      - "Toast component implemented"
+      - "Toast queue with max 3 visible"
+      - "Auto-dismiss after 5 seconds"
+      - "Different styles for success/error/warning"
+
+  - id: "US016-2"
+    priority: "P3"
+    title: "Desktop notifications (optional)"
+    description: |
+      As a user who runs SafeDownload in background,
+      I want desktop notifications for completed downloads,
+      So that I'm notified even when not focused on terminal.
+
+    acceptance_criteria:
+      - "GIVEN notifications enabled in config, WHEN download completes, THEN desktop notification shown"
+      - "GIVEN notifications disabled (default), WHEN download completes, THEN no desktop notification"
+      - "GIVEN notification clicked, WHEN actioned, THEN terminal focused (if supported)"
+      - "GIVEN /notify on command, WHEN executed, THEN notifications enabled for session"
+      - "GIVEN /notify off command, WHEN executed, THEN notifications disabled"
+
+    independent_test: |
+      1. Enable: /notify on
+      2. Add download
+      3. Wait for completion
+      4. Verify: Desktop notification appears (macOS Notification Center)
+      5. Run: /notify off
+      6. Add another download
+      7. Wait for completion
+      8. Verify: No desktop notification
+
+    definition_of_done:
+      - "Desktop notification integration (macOS, Linux)"
+      - "Config option: notifications.desktop (default: false)"
+      - "/notify command for session toggle"
+      - "Click action focuses terminal (best effort)"
+
+  - id: "US016-3"
+    priority: "P3"
+    title: "Sound alerts (optional)"
+    description: |
+      As a user,
+      I want optional sound alerts for events,
+      So that I hear when downloads complete.
+
+    acceptance_criteria:
+      - "GIVEN sounds enabled, WHEN download completes, THEN success sound plays"
+      - "GIVEN sounds enabled, WHEN download fails, THEN error sound plays"
+      - "GIVEN sounds disabled (default), WHEN events occur, THEN no sound"
+      - "GIVEN /sound on command, WHEN executed, THEN sounds enabled"
+      - "GIVEN /sound off command, WHEN executed, THEN sounds disabled"
+
+    independent_test: |
+      1. Enable: /sound on
+      2. Add download
+      3. Wait for completion
+      4. Verify: Success sound plays (system beep or custom)
+      5. Run: /sound off
+      6. Verify: No more sounds
+
+    definition_of_done:
+      - "Sound playback (afplay on macOS, paplay on Linux)"
+      - "Config option: notifications.sound (default: false)"
+      - "/sound command for session toggle"
+      - "Fallback to system beep if audio unavailable"
+
+functional_requirements:
+  - id: "FR016-1"
+    description: "System MUST show toast notifications in TUI"
+    priority: "MUST"
+    test: "Toast appears on download complete"
+
+  - id: "FR016-2"
+    description: "System MUST auto-dismiss toasts after configurable timeout"
+    priority: "MUST"
+    test: "Toast disappears after 5 seconds"
+
+  - id: "FR016-3"
+    description: "System SHOULD support desktop notifications (opt-in)"
+    priority: "SHOULD"
+    test: "Desktop notification appears when enabled"
+
+  - id: "FR016-4"
+    description: "System SHOULD support sound alerts (opt-in)"
+    priority: "SHOULD"
+    test: "Sound plays when enabled"
+
+  - id: "FR016-5"
+    description: "System MUST NOT send notification content externally"
+    priority: "MUST"
+    test: "No network requests during notifications"
+
+implementation:
+  packages:
+    - name: "pkg/ui/tui/components"
+      purpose: "Toast notification component"
+      new_files:
+        - "pkg/ui/tui/components/toast.go"
+
+    - name: "pkg/notify"
+      purpose: "Desktop and sound notifications"
+      new_files:
+        - "pkg/notify/desktop.go (desktop notifications)"
+        - "pkg/notify/desktop_darwin.go (macOS implementation)"
+        - "pkg/notify/desktop_linux.go (Linux implementation)"
+        - "pkg/notify/sound.go (sound alerts)"
+
+  cli:
+    new_commands:
+      - command: "/notify"
+        args: "<on|off>"
+        description: "Toggle desktop notifications"
+
+      - command: "/sound"
+        args: "<on|off>"
+        description: "Toggle sound alerts"
+
+  schema_changes:
+    config_json:
+      version: "1.1.0"
+      changes:
+        - type: "add"
+          field: "notifications.toast_timeout_seconds"
+          data_type: "integer"
+          default: 5
+          optional: true
+
+        - type: "add"
+          field: "notifications.desktop"
+          data_type: "boolean"
+          default: false
+          optional: true
+
+        - type: "add"
+          field: "notifications.sound"
+          data_type: "boolean"
+          default: false
+          optional: true
+
+testing:
+  unit_tests:
+    - file: "pkg/ui/tui/components/toast_test.go"
+      functions:
+        - "TestToast_Display"
+        - "TestToast_AutoDismiss"
+        - "TestToast_Queue"
+      coverage_target: "80%"
+
+  e2e_tests:
+    - file: "tests/e2e/notifications_test.bats"
+      scenarios:
+        - "Toast appears on download complete"
+        - "Desktop notification when enabled"
+        - "No notification when disabled"
+
+dependencies:
+  internal:
+    - feature: "F014"
+      name: "Bubble Tea TUI Framework"
+      reason: "Toast notifications in TUI"
+
+  external:
+    - name: "System notification APIs"
+      notes: "macOS: osascript, Linux: notify-send"
+
+documentation:
+  changelog:
+    type: "Added"
+    entry: |
+      ### Notifications (v1.1.0)
+      - Toast notifications in TUI (auto-dismiss after 5s)
+      - Desktop notifications (opt-in via /notify on)
+      - Sound alerts (opt-in via /sound on)
+
+sprint_tasks:
+  implementation:
+    - task: "T016-001"
+      description: "Implement toast component"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T016-002"
+      description: "Implement desktop notifications (macOS/Linux)"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T016-003"
+      description: "Implement sound alerts"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T016-004"
+      description: "Write tests"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+  documentation:
+    - task: "T016-005"
+      description: "Update documentation"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Desktop notifications use native system APIs:
+  - macOS: osascript for Notification Center
+  - Linux: notify-send (libnotify)
+
+  Sound uses native audio:
+  - macOS: afplay
+  - Linux: paplay (PulseAudio) or aplay (ALSA)
+
+  All notifications are local-only for privacy.

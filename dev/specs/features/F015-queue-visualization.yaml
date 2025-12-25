@@ -1,0 +1,387 @@
+metadata:
+  id: "F015"
+  name: "Advanced Queue Visualization"
+  version: "1.1.0"
+  sprint: 7
+  status: "planned"
+  priority: "P2"
+  story_points: 8
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Extend the Bubble Tea TUI with advanced queue management features including
+  tree view for grouped downloads, filtering by status/tag, sorting options,
+  and search functionality for efficient queue navigation.
+
+  This feature enhances Constitution Principle I (Professional UX) by providing
+  power user capabilities for managing large download queues.
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Professional, Intuitive UX"
+      notes: |
+        Advanced visualization makes large queues manageable,
+        providing filtering, sorting, and search for efficiency.
+
+    - id: "VI"
+      name: "Slash Commands"
+      notes: |
+        New slash commands for filtering, sorting, searching:
+        /filter, /sort, /search, /group
+
+  gates:
+    - gate: "Performance"
+      requirement: "Queue list render <100ms even with 1000+ downloads"
+      test: "tests/benchmark/queue_render_test.go"
+
+user_stories:
+  - id: "US015-1"
+    priority: "P2"
+    title: "Tree view for grouped downloads"
+    description: |
+      As a user with many downloads,
+      I want to group downloads by tag or source,
+      So that I can organize and find downloads easily.
+
+    acceptance_criteria:
+      - "GIVEN /group tag command, WHEN executed, THEN downloads grouped by tag"
+      - "GIVEN /group source command, WHEN executed, THEN downloads grouped by domain"
+      - "GIVEN grouped view, WHEN group collapsed, THEN only group header shown"
+      - "GIVEN grouped view, WHEN group expanded, THEN all downloads in group visible"
+      - "GIVEN /group off command, WHEN executed, THEN flat list restored"
+
+    independent_test: |
+      1. Add downloads with tags: /add --tag software https://example.com/app.zip
+      2. Add more: /add --tag media https://example.com/video.mp4
+      3. Run: /group tag
+      4. Verify: Downloads grouped under "software" and "media" headers
+      5. Press left arrow on group header
+      6. Verify: Group collapses
+      7. Press right arrow
+      8. Verify: Group expands
+      9. Run: /group off
+      10. Verify: Flat list restored
+
+    definition_of_done:
+      - "Tree view component implemented"
+      - "/group command with tag, source, off options"
+      - "Collapse/expand with arrow keys"
+      - "Group counts shown in header"
+
+  - id: "US015-2"
+    priority: "P2"
+    title: "Filter downloads by status"
+    description: |
+      As a user,
+      I want to filter the queue by download status,
+      So that I can focus on specific downloads.
+
+    acceptance_criteria:
+      - "GIVEN /filter active command, WHEN executed, THEN only active downloads shown"
+      - "GIVEN /filter queued command, WHEN executed, THEN only queued downloads shown"
+      - "GIVEN /filter completed command, WHEN executed, THEN only completed downloads shown"
+      - "GIVEN /filter failed command, WHEN executed, THEN only failed downloads shown"
+      - "GIVEN /filter all command, WHEN executed, THEN all downloads shown"
+      - "GIVEN filter active, WHEN shown, THEN filter indicator in header"
+
+    independent_test: |
+      1. Add downloads (some active, some completed, some failed)
+      2. Run: /filter active
+      3. Verify: Only active downloads visible
+      4. Verify: Header shows "Filter: active (3 of 10)"
+      5. Run: /filter failed
+      6. Verify: Only failed downloads visible
+      7. Run: /filter all
+      8. Verify: All downloads visible, filter indicator gone
+
+    definition_of_done:
+      - "/filter command with status options"
+      - "Filter state shown in header"
+      - "Count of filtered vs total shown"
+      - "Easy filter clear (/filter all)"
+
+  - id: "US015-3"
+    priority: "P2"
+    title: "Sort downloads"
+    description: |
+      As a user,
+      I want to sort downloads by various criteria,
+      So that I can prioritize and organize my queue.
+
+    acceptance_criteria:
+      - "GIVEN /sort name command, WHEN executed, THEN downloads sorted alphabetically"
+      - "GIVEN /sort size command, WHEN executed, THEN downloads sorted by file size"
+      - "GIVEN /sort speed command, WHEN executed, THEN active downloads sorted by speed"
+      - "GIVEN /sort added command, WHEN executed, THEN downloads sorted by add time"
+      - "GIVEN /sort command, WHEN executed again, THEN sort order toggles (asc/desc)"
+
+    independent_test: |
+      1. Add multiple downloads of varying sizes
+      2. Run: /sort size
+      3. Verify: Sorted by size (smallest first)
+      4. Run: /sort size
+      5. Verify: Sort order reversed (largest first)
+      6. Run: /sort name
+      7. Verify: Sorted alphabetically (A-Z)
+      8. Run: /sort name
+      9. Verify: Reversed (Z-A)
+
+    definition_of_done:
+      - "/sort command with name, size, speed, added options"
+      - "Toggle ascending/descending on repeat"
+      - "Sort indicator in header (▲/▼)"
+      - "Stable sort (preserves order for equal values)"
+
+  - id: "US015-4"
+    priority: "P2"
+    title: "Search within queue"
+    description: |
+      As a user with many downloads,
+      I want to search for specific downloads,
+      So that I can quickly find what I'm looking for.
+
+    acceptance_criteria:
+      - "GIVEN /search <term> command, WHEN executed, THEN downloads matching term highlighted"
+      - "GIVEN search active, WHEN n pressed, THEN jump to next match"
+      - "GIVEN search active, WHEN N pressed, THEN jump to previous match"
+      - "GIVEN search active, WHEN Escape pressed, THEN search cleared"
+      - "GIVEN /search command, WHEN term matches filename, THEN match found"
+      - "GIVEN /search command, WHEN term matches URL, THEN match found"
+
+    independent_test: |
+      1. Add downloads: app.zip, video.mp4, document.pdf
+      2. Run: /search video
+      3. Verify: "video.mp4" highlighted, others dimmed
+      4. Verify: Header shows "Search: video (1 match)"
+      5. Press n
+      6. Verify: Jumps to next match (if multiple)
+      7. Press Escape
+      8. Verify: Search cleared, all downloads normal
+
+    definition_of_done:
+      - "/search command with term argument"
+      - "Incremental search (highlights as you type)"
+      - "n/N for next/previous match"
+      - "Search matches filename and URL"
+      - "Match count in header"
+
+functional_requirements:
+  - id: "FR015-1"
+    description: "System MUST support /group command (tag, source, off)"
+    priority: "MUST"
+    test: "Group by tag, verify tree view"
+
+  - id: "FR015-2"
+    description: "System MUST support /filter command (active, queued, completed, failed, all)"
+    priority: "MUST"
+    test: "Filter by status, verify filtered list"
+
+  - id: "FR015-3"
+    description: "System MUST support /sort command (name, size, speed, added)"
+    priority: "MUST"
+    test: "Sort by criteria, verify order"
+
+  - id: "FR015-4"
+    description: "System MUST support /search command with highlighting"
+    priority: "MUST"
+    test: "Search term, verify matches highlighted"
+
+  - id: "FR015-5"
+    description: "System MUST show filter/sort/search state in header"
+    priority: "MUST"
+    test: "Verify indicators visible when active"
+
+  - id: "FR015-6"
+    description: "System MUST render queue list in <100ms for 1000+ downloads"
+    priority: "MUST"
+    test: "Benchmark with large queue"
+
+non_functional_requirements:
+  performance:
+    - "Queue render MUST be <100ms for 1000 downloads"
+    - "Filter/sort operations MUST be <50ms"
+    - "Search highlighting MUST be instant (<16ms)"
+    - "Virtual scrolling for lists >100 items"
+
+  usability:
+    - "Commands MUST have intuitive syntax"
+    - "State MUST be clearly indicated in UI"
+    - "Clearing filters/search MUST be easy"
+
+implementation:
+  packages:
+    - name: "pkg/ui/tui/components"
+      purpose: "Advanced queue visualization components"
+      new_files:
+        - "pkg/ui/tui/components/tree_view.go"
+        - "pkg/ui/tui/components/filter.go"
+        - "pkg/ui/tui/components/sort.go"
+        - "pkg/ui/tui/components/search.go"
+      modified_files:
+        - "pkg/ui/tui/components/download_list.go (integrate filter/sort/search)"
+
+    - name: "pkg/queue"
+      purpose: "Queue operations (filter, sort, group)"
+      new_files:
+        - "pkg/queue/filter.go"
+        - "pkg/queue/sort.go"
+        - "pkg/queue/group.go"
+        - "pkg/queue/search.go"
+
+  cli:
+    new_commands:
+      - command: "/filter"
+        args: "<status>"
+        description: "Filter downloads (active, queued, completed, failed, all)"
+
+      - command: "/sort"
+        args: "<field>"
+        description: "Sort downloads (name, size, speed, added)"
+
+      - command: "/search"
+        args: "<term>"
+        description: "Search for downloads"
+
+      - command: "/group"
+        args: "<by>"
+        description: "Group downloads (tag, source, off)"
+
+  schema_changes:
+    config_json:
+      version: "1.1.0"
+      changes:
+        - type: "add"
+          field: "ui.default_sort"
+          data_type: "string"
+          default: "added"
+          optional: true
+
+        - type: "add"
+          field: "ui.default_group"
+          data_type: "string"
+          default: "off"
+          optional: true
+
+testing:
+  unit_tests:
+    - file: "pkg/queue/filter_test.go"
+      functions:
+        - "TestFilter_ByStatus"
+        - "TestFilter_Multiple"
+      coverage_target: "90%"
+
+    - file: "pkg/queue/sort_test.go"
+      functions:
+        - "TestSort_ByName"
+        - "TestSort_BySize"
+        - "TestSort_Toggle"
+      coverage_target: "90%"
+
+    - file: "pkg/queue/search_test.go"
+      functions:
+        - "TestSearch_Filename"
+        - "TestSearch_URL"
+        - "TestSearch_CaseInsensitive"
+      coverage_target: "90%"
+
+  benchmark_tests:
+    - file: "tests/benchmark/queue_render_test.go"
+      scenarios:
+        - "Render 1000 downloads: <100ms"
+        - "Filter 1000 downloads: <50ms"
+        - "Sort 1000 downloads: <50ms"
+        - "Search 1000 downloads: <50ms"
+
+  e2e_tests:
+    - file: "tests/e2e/queue_visualization_test.bats"
+      scenarios:
+        - "Filter by status"
+        - "Sort by field"
+        - "Search and navigate"
+        - "Group by tag"
+
+dependencies:
+  internal:
+    - feature: "F014"
+      name: "Bubble Tea TUI Framework"
+      reason: "Queue visualization extends TUI components"
+
+documentation:
+  readme_sections:
+    - section: "Queue Management"
+      changes: "Add /filter, /sort, /search, /group command documentation"
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### Queue Visualization (v1.1.0)
+      - /filter: Filter by status (active, queued, completed, failed)
+      - /sort: Sort by name, size, speed, or time added
+      - /search: Search with highlighting and n/N navigation
+      - /group: Tree view by tag or source
+
+edge_cases:
+  - case: "Empty queue after filter"
+    expected_behavior: "Show 'No downloads match filter. Press /filter all to clear.'"
+    test: "TestFilter_EmptyResult"
+
+  - case: "No search matches"
+    expected_behavior: "Show 'No matches for: <term>'"
+    test: "TestSearch_NoMatches"
+
+  - case: "Very long filenames"
+    expected_behavior: "Truncate with ellipsis, full name on hover/select"
+    test: "TestRender_LongFilename"
+
+sprint_tasks:
+  implementation:
+    - task: "T015-001"
+      description: "Implement filter system (pkg/queue/filter.go)"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T015-002"
+      description: "Implement sort system (pkg/queue/sort.go)"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T015-003"
+      description: "Implement search system (pkg/queue/search.go)"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+    - task: "T015-004"
+      description: "Implement tree view component"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T015-005"
+      description: "Integrate with TUI download list"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T015-006"
+      description: "Write unit tests"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T015-007"
+      description: "Write benchmark tests"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+  documentation:
+    - task: "T015-008"
+      description: "Update TUI documentation"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  This feature builds on F014 (Bubble Tea TUI) to provide power user
+  capabilities for managing large download queues efficiently.
+
+  Virtual scrolling is critical for performance with large lists.
+  The tree view should be collapsible to save screen space.

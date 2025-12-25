@@ -1,0 +1,270 @@
+metadata:
+  id: "F019"
+  name: "Download Scheduling"
+  version: "1.2.0"
+  sprint: 10
+  status: "planned"
+  priority: "P3"
+  story_points: 8
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Add time-based scheduling for downloads with cron-like syntax, enabling
+  users to schedule large downloads for off-peak hours and configure
+  bandwidth throttling by time of day.
+
+  This feature supports power users who want automated download management
+  without constant manual intervention.
+
+constitution_compliance:
+  principles:
+    - id: "I"
+      name: "Professional, Intuitive UX"
+      notes: "Scheduling provides hands-off download management"
+
+    - id: "II"
+      name: "Zero-Configuration"
+      notes: "Scheduling is optional; instant downloads remain default"
+
+user_stories:
+  - id: "US019-1"
+    priority: "P3"
+    title: "Schedule downloads"
+    description: |
+      As a user with bandwidth limits,
+      I want to schedule downloads for off-peak hours,
+      So that large downloads don't affect daytime usage.
+
+    acceptance_criteria:
+      - "GIVEN /schedule command, WHEN cron syntax provided, THEN download queued for that time"
+      - "GIVEN scheduled download, WHEN time arrives, THEN download starts automatically"
+      - "GIVEN --at flag, WHEN time provided, THEN download scheduled for that time"
+      - "GIVEN /schedule list, WHEN executed, THEN shows all scheduled downloads"
+      - "GIVEN /schedule cancel <id>, WHEN executed, THEN removes scheduled download"
+
+    independent_test: |
+      1. Run: /schedule "0 2 * * *" https://example.com/large.iso
+      2. Verify: "Scheduled: large.iso for 02:00 daily"
+      3. Run: /schedule list
+      4. Verify: Shows scheduled download with next run time
+      5. Wait for 02:00 (or adjust system time)
+      6. Verify: Download starts automatically
+
+    definition_of_done:
+      - "Cron parser for schedule syntax"
+      - "/schedule command with add/list/cancel"
+      - "--at flag for CLI scheduling"
+      - "Background scheduler service"
+      - "Persistence of scheduled tasks"
+
+  - id: "US019-2"
+    priority: "P3"
+    title: "Bandwidth throttling by schedule"
+    description: |
+      As a user sharing bandwidth,
+      I want to limit download speed during work hours,
+      So that downloads don't affect video calls.
+
+    acceptance_criteria:
+      - "GIVEN /throttle command with time range, WHEN configured, THEN speed limited during hours"
+      - "GIVEN 09:00-17:00 throttle, WHEN download active at 10:00, THEN limited to configured speed"
+      - "GIVEN outside throttle hours, WHEN download active at 20:00, THEN full speed"
+      - "GIVEN /throttle list, WHEN executed, THEN shows all throttle rules"
+      - "GIVEN /throttle remove <id>, WHEN executed, THEN removes throttle rule"
+
+    independent_test: |
+      1. Run: /throttle 1MB/s 09:00-17:00
+      2. Verify: "Throttle: 1MB/s from 09:00 to 17:00"
+      3. Start large download at 10:00
+      4. Verify: Speed limited to ~1MB/s
+      5. Wait until after 17:00 (or adjust time)
+      6. Verify: Speed increases to full capacity
+
+    definition_of_done:
+      - "Time-based throttle configuration"
+      - "/throttle command with time range"
+      - "Rate limiter respects schedule"
+      - "Multiple throttle rules support"
+
+  - id: "US019-3"
+    priority: "P3"
+    title: "Queue activation by schedule"
+    description: |
+      As a user,
+      I want to pause all downloads during work hours,
+      So that my connection is free when I need it.
+
+    acceptance_criteria:
+      - "GIVEN /quiet-hours command, WHEN configured, THEN queue paused during hours"
+      - "GIVEN quiet hours active, WHEN time in range, THEN all downloads paused"
+      - "GIVEN quiet hours end, WHEN time outside range, THEN downloads resume"
+      - "GIVEN urgent download, WHEN --force flag used, THEN overrides quiet hours"
+
+    independent_test: |
+      1. Run: /quiet-hours 09:00-17:00
+      2. Verify: "Quiet hours: 09:00 to 17:00"
+      3. Start download at 10:00
+      4. Verify: Download immediately paused with "Quiet hours active"
+      5. Wait until 17:01
+      6. Verify: Download automatically resumes
+
+    definition_of_done:
+      - "Quiet hours configuration"
+      - "/quiet-hours command"
+      - "Queue respects quiet hours"
+      - "--force flag to override"
+
+functional_requirements:
+  - id: "FR019-1"
+    description: "System MUST support cron-like scheduling syntax"
+    priority: "MUST"
+    test: "Parse and execute cron expression"
+
+  - id: "FR019-2"
+    description: "System MUST persist scheduled tasks across restarts"
+    priority: "MUST"
+    test: "Restart app, verify schedules preserved"
+
+  - id: "FR019-3"
+    description: "System MUST support time-based throttling"
+    priority: "MUST"
+    test: "Throttle active during configured hours"
+
+  - id: "FR019-4"
+    description: "System SHOULD support quiet hours"
+    priority: "SHOULD"
+    test: "Queue paused during quiet hours"
+
+implementation:
+  packages:
+    - name: "pkg/scheduler"
+      purpose: "Download scheduling"
+      new_files:
+        - "pkg/scheduler/cron.go (cron parser)"
+        - "pkg/scheduler/scheduler.go (scheduler service)"
+        - "pkg/scheduler/task.go (scheduled task model)"
+        - "pkg/scheduler/throttle.go (time-based throttle)"
+
+    - name: "cmd/safedownload/commands"
+      new_files:
+        - "schedule.go (schedule command)"
+        - "throttle.go (throttle command)"
+
+  cli:
+    new_flags:
+      - flag: "--at"
+        type: "string"
+        description: "Schedule download for specific time (e.g., '02:00' or '2024-01-15T02:00')"
+
+    new_commands:
+      - command: "/schedule"
+        args: "<cron> <url> | list | cancel <id>"
+        description: "Schedule downloads with cron syntax"
+
+      - command: "/throttle"
+        args: "<speed> <time-range> | list | remove <id>"
+        description: "Time-based bandwidth throttling"
+
+      - command: "/quiet-hours"
+        args: "<start>-<end> | off"
+        description: "Pause downloads during hours"
+
+  schema_changes:
+    state_json:
+      version: "1.2.0"
+      changes:
+        - type: "add"
+          field: "scheduled_tasks"
+          data_type: "array"
+          optional: true
+
+    config_json:
+      version: "1.2.0"
+      changes:
+        - type: "add"
+          field: "throttle_rules"
+          data_type: "array"
+          optional: true
+
+        - type: "add"
+          field: "quiet_hours"
+          data_type: "object"
+          optional: true
+
+testing:
+  unit_tests:
+    - file: "pkg/scheduler/cron_test.go"
+      functions:
+        - "TestCron_Parse"
+        - "TestCron_NextRun"
+      coverage_target: "90%"
+
+    - file: "pkg/scheduler/throttle_test.go"
+      functions:
+        - "TestThrottle_ActiveDuring"
+        - "TestThrottle_InactiveOutside"
+      coverage_target: "90%"
+
+  e2e_tests:
+    - file: "tests/e2e/scheduling_test.bats"
+      scenarios:
+        - "Schedule download for specific time"
+        - "Throttle during time range"
+        - "Quiet hours pause queue"
+
+documentation:
+  changelog:
+    type: "Added"
+    entry: |
+      ### Download Scheduling (v1.2.0)
+      - /schedule: Cron-like download scheduling
+      - /throttle: Time-based bandwidth limiting
+      - /quiet-hours: Pause downloads during hours
+      - --at flag for CLI scheduling
+
+sprint_tasks:
+  implementation:
+    - task: "T019-001"
+      description: "Implement cron parser"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T019-002"
+      description: "Implement scheduler service"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T019-003"
+      description: "Implement time-based throttle"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+    - task: "T019-004"
+      description: "Implement quiet hours"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T019-005"
+      description: "Write tests"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  documentation:
+    - task: "T019-006"
+      description: "Document scheduling features"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Cron syntax examples:
+  - "0 2 * * *" = 2:00 AM daily
+  - "0 0 * * 0" = Midnight on Sundays
+  - "*/30 * * * *" = Every 30 minutes
+
+  Throttle time range format: HH:MM-HH:MM (24-hour)
+
+  Quiet hours vs throttle:
+  - Quiet hours: Completely pauses queue
+  - Throttle: Limits speed but continues downloads

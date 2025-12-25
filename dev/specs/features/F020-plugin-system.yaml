@@ -1,0 +1,361 @@
+metadata:
+  id: "F020"
+  name: "Plugin System"
+  version: "1.2.0"
+  sprint: "10-11"
+  status: "planned"
+  priority: "P3"
+  story_points: 13
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Implement a plugin system for pre/post-download hooks, enabling users to
+  extend SafeDownload with custom automation like extracting archives,
+  virus scanning, or sending notifications to external services.
+
+  This feature provides extensibility for power users without bloating the
+  core application with specialized features.
+
+constitution_compliance:
+  principles:
+    - id: "II"
+      name: "Zero-Configuration & Optional Features"
+      notes: "Plugins are optional; core functionality unchanged without them"
+
+    - id: "X"
+      name: "Security Posture"
+      notes: "Plugins execute in sandboxed context with explicit permissions"
+
+  gates:
+    - gate: "Security"
+      requirement: "Plugins MUST NOT access state without explicit permission"
+      test: "TestPlugin_Sandboxing"
+
+user_stories:
+  - id: "US020-1"
+    priority: "P3"
+    title: "Pre-download hooks"
+    description: |
+      As a power user,
+      I want to run scripts before downloads start,
+      So that I can validate URLs or modify requests.
+
+    acceptance_criteria:
+      - "GIVEN pre-download plugin, WHEN download starts, THEN plugin invoked with download info"
+      - "GIVEN plugin returns error, WHEN checked, THEN download cancelled"
+      - "GIVEN plugin modifies headers, WHEN applied, THEN request uses modified headers"
+      - "GIVEN plugin execution, WHEN completes, THEN timing logged"
+
+    independent_test: |
+      1. Create plugin: plugins/check-url.sh
+         ```bash
+         #!/bin/bash
+         if [[ "$SAFEDOWNLOAD_URL" == *"blocked.com"* ]]; then
+           echo "ERROR: Blocked domain" >&2
+           exit 1
+         fi
+         ```
+      2. Run: safedownload add https://blocked.com/file.zip
+      3. Verify: "Pre-download plugin blocked: Blocked domain"
+      4. Run: safedownload add https://allowed.com/file.zip
+      5. Verify: Download starts normally
+
+    definition_of_done:
+      - "Pre-download hook invocation"
+      - "Plugin receives download context (URL, headers)"
+      - "Error handling (cancel on non-zero exit)"
+      - "Header modification support"
+
+  - id: "US020-2"
+    priority: "P3"
+    title: "Post-download hooks"
+    description: |
+      As a power user,
+      I want to run scripts after downloads complete,
+      So that I can extract archives or process files.
+
+    acceptance_criteria:
+      - "GIVEN post-download plugin, WHEN download completes, THEN plugin invoked with file path"
+      - "GIVEN extract plugin, WHEN .zip downloaded, THEN archive extracted"
+      - "GIVEN notify plugin, WHEN completes, THEN notification sent to external service"
+      - "GIVEN plugin fails, WHEN error logged, THEN download still marked complete"
+
+    independent_test: |
+      1. Create plugin: plugins/extract.sh
+         ```bash
+         #!/bin/bash
+         if [[ "$SAFEDOWNLOAD_FILE" == *.zip ]]; then
+           unzip "$SAFEDOWNLOAD_FILE" -d "${SAFEDOWNLOAD_FILE%.zip}"
+         fi
+         ```
+      2. Download: safedownload add https://example.com/archive.zip
+      3. Wait for completion
+      4. Verify: archive.zip extracted to archive/ directory
+
+    definition_of_done:
+      - "Post-download hook invocation"
+      - "Plugin receives file path, checksum result"
+      - "Error handling (log but don't fail download)"
+      - "Async execution option"
+
+  - id: "US020-3"
+    priority: "P3"
+    title: "Plugin discovery and management"
+    description: |
+      As a user,
+      I want to easily manage plugins,
+      So that I can enable/disable them as needed.
+
+    acceptance_criteria:
+      - "GIVEN plugins/ directory, WHEN app starts, THEN plugins discovered"
+      - "GIVEN /plugins command, WHEN executed, THEN lists installed plugins"
+      - "GIVEN /plugins enable <name>, WHEN executed, THEN plugin activated"
+      - "GIVEN /plugins disable <name>, WHEN executed, THEN plugin deactivated"
+      - "GIVEN plugin manifest (plugin.yaml), WHEN read, THEN metadata shown"
+
+    independent_test: |
+      1. Create plugin: ~/.safedownload/plugins/my-plugin/plugin.yaml
+      2. Run: /plugins
+      3. Verify: "my-plugin (disabled) - My custom plugin"
+      4. Run: /plugins enable my-plugin
+      5. Verify: "Enabled: my-plugin"
+      6. Run: /plugins
+      7. Verify: "my-plugin (enabled) - My custom plugin"
+
+    definition_of_done:
+      - "Plugin directory scanning"
+      - "Plugin manifest (plugin.yaml)"
+      - "/plugins command (list, enable, disable)"
+      - "Plugin state persisted in config"
+
+  - id: "US020-4"
+    priority: "P3"
+    title: "Plugin sandboxing"
+    description: |
+      As a security-conscious user,
+      I want plugins to run in a sandboxed environment,
+      So that they can't access sensitive data without permission.
+
+    acceptance_criteria:
+      - "GIVEN plugin execution, WHEN sandboxed, THEN only receives declared environment variables"
+      - "GIVEN plugin manifest, WHEN declares file access, THEN only those paths accessible"
+      - "GIVEN plugin without network permission, WHEN tries HTTP, THEN blocked"
+      - "GIVEN plugin execution, WHEN times out, THEN killed and error logged"
+
+    independent_test: |
+      1. Create plugin trying to read ~/.ssh/id_rsa
+      2. Run download
+      3. Verify: Plugin cannot access ~/.ssh/ (permission denied)
+      4. Create plugin with timeout
+      5. Plugin sleeps for 60 seconds
+      6. Verify: Plugin killed after 30s (default timeout)
+
+    definition_of_done:
+      - "Environment variable filtering"
+      - "File path restrictions"
+      - "Execution timeout (configurable, default 30s)"
+      - "Optional network blocking"
+
+functional_requirements:
+  - id: "FR020-1"
+    description: "System MUST support pre-download hooks"
+    priority: "MUST"
+    test: "Pre-download plugin executes before download"
+
+  - id: "FR020-2"
+    description: "System MUST support post-download hooks"
+    priority: "MUST"
+    test: "Post-download plugin executes after download"
+
+  - id: "FR020-3"
+    description: "System MUST discover plugins from plugins/ directory"
+    priority: "MUST"
+    test: "Plugins listed after placement in directory"
+
+  - id: "FR020-4"
+    description: "System MUST support plugin manifest (plugin.yaml)"
+    priority: "MUST"
+    test: "Manifest metadata shown in /plugins"
+
+  - id: "FR020-5"
+    description: "System MUST enforce execution timeout"
+    priority: "MUST"
+    test: "Long-running plugin killed after timeout"
+
+  - id: "FR020-6"
+    description: "System SHOULD sandbox plugins with restricted permissions"
+    priority: "SHOULD"
+    test: "Plugin cannot access files outside scope"
+
+implementation:
+  packages:
+    - name: "pkg/plugin"
+      purpose: "Plugin system"
+      new_files:
+        - "pkg/plugin/manager.go (plugin discovery and lifecycle)"
+        - "pkg/plugin/manifest.go (plugin.yaml parsing)"
+        - "pkg/plugin/executor.go (subprocess execution)"
+        - "pkg/plugin/sandbox.go (sandboxing)"
+        - "pkg/plugin/hooks.go (hook types)"
+
+    - name: "cmd/safedownload/commands"
+      new_files:
+        - "plugins.go (plugins command)"
+
+  cli:
+    new_commands:
+      - command: "/plugins"
+        args: "| enable <name> | disable <name> | info <name>"
+        description: "Manage plugins"
+
+  schema_changes:
+    config_json:
+      version: "1.2.0"
+      changes:
+        - type: "add"
+          field: "plugins"
+          data_type: "object"
+          optional: true
+          note: "enabled_plugins, plugin_timeout, etc."
+
+  plugin_manifest:
+    file: "plugin.yaml"
+    schema:
+      name: "string (required)"
+      version: "string (required)"
+      description: "string"
+      author: "string"
+      hooks: "array (pre-download, post-download, on-error)"
+      script: "string (path to executable)"
+      permissions:
+        file_access: "array of paths"
+        network: "boolean"
+      timeout_seconds: "integer (default: 30)"
+
+testing:
+  unit_tests:
+    - file: "pkg/plugin/manager_test.go"
+      functions:
+        - "TestManager_Discover"
+        - "TestManager_EnableDisable"
+      coverage_target: "80%"
+
+    - file: "pkg/plugin/executor_test.go"
+      functions:
+        - "TestExecutor_RunWithTimeout"
+        - "TestExecutor_Sandbox"
+      coverage_target: "80%"
+
+  integration_tests:
+    - file: "tests/integration/plugin_test.go"
+      scenarios:
+        - "Pre-download hook blocks URL"
+        - "Post-download hook extracts archive"
+        - "Plugin timeout kills process"
+
+  e2e_tests:
+    - file: "tests/e2e/plugin_test.bats"
+      scenarios:
+        - "List plugins"
+        - "Enable/disable plugin"
+        - "Pre/post hooks execute"
+
+documentation:
+  new_docs:
+    - file: "docs/PLUGINS.md"
+      purpose: "Plugin development guide"
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### Plugin System (v1.2.0)
+      - Pre/post-download hooks
+      - Plugin discovery from ~/.safedownload/plugins/
+      - Plugin manifest (plugin.yaml) for metadata
+      - Sandboxed execution with timeout
+      - /plugins command for management
+
+edge_cases:
+  - case: "Plugin crashes"
+    expected_behavior: "Log error, continue with download"
+    test: "TestPlugin_Crash"
+
+  - case: "Plugin infinite loop"
+    expected_behavior: "Killed after timeout (default 30s)"
+    test: "TestPlugin_Timeout"
+
+  - case: "Circular plugin dependencies"
+    expected_behavior: "Detect and reject with error"
+    test: "TestPlugin_CircularDependency"
+
+risks:
+  - id: "RISK020-1"
+    title: "Plugin security vulnerabilities"
+    impact: "high"
+    probability: "medium"
+    mitigation: |
+      - Sandboxing with restricted permissions
+      - Clear documentation on plugin risks
+      - Opt-in plugin system (disabled by default)
+
+sprint_tasks:
+  implementation:
+    - task: "T020-001"
+      description: "Implement plugin discovery and manifest parsing"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T020-002"
+      description: "Implement plugin executor with subprocess"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T020-003"
+      description: "Implement pre-download hooks"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T020-004"
+      description: "Implement post-download hooks"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T020-005"
+      description: "Implement sandboxing and timeout"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T020-006"
+      description: "Implement /plugins command"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T020-007"
+      description: "Write tests"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+  documentation:
+    - task: "T020-008"
+      description: "Create docs/PLUGINS.md"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+notes: |
+  Plugin execution model:
+  - Subprocess-based (shell scripts, executables)
+  - Environment variables for context:
+    - SAFEDOWNLOAD_URL
+    - SAFEDOWNLOAD_FILE
+    - SAFEDOWNLOAD_CHECKSUM
+    - SAFEDOWNLOAD_STATUS
+  - Exit code determines success/failure
+  - stdout for output, stderr for errors
+
+  Example plugins:
+  - extract.sh: Extract archives after download
+  - notify.sh: Send to Slack/Discord on completion
+  - virus-scan.sh: Scan with ClamAV before marking complete
+  - cleanup.sh: Remove .part files on error

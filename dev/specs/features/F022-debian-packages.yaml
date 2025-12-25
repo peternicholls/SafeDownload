@@ -1,0 +1,247 @@
+metadata:
+  id: "F022"
+  name: "Debian/Ubuntu Packages"
+  version: "1.3.0"
+  sprint: 12
+  status: "planned"
+  priority: "P2"
+  story_points: 8
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Create .deb packages for Debian and Ubuntu distributions, enabling users
+  to install SafeDownload via apt with automatic dependency resolution
+  and system integration.
+
+  This feature extends distribution support to the largest Linux distribution
+  family, supporting Constitution platform support requirements.
+
+constitution_compliance:
+  principles:
+    - id: "II"
+      name: "Zero-Configuration"
+      notes: "apt install provides standard Linux installation experience"
+
+  gates:
+    - gate: "Distribution"
+      requirement: "apt install safedownload installs working binary"
+      test: "Manual: install on Ubuntu 22.04, Debian 12"
+
+user_stories:
+  - id: "US022-1"
+    priority: "P2"
+    title: "Install via apt"
+    description: |
+      As a Debian/Ubuntu user,
+      I want to install SafeDownload via apt,
+      So that installation follows system conventions.
+
+    acceptance_criteria:
+      - "GIVEN apt repository configured, WHEN apt install safedownload, THEN package installed"
+      - "GIVEN installed, WHEN safedownload --version, THEN version displayed"
+      - "GIVEN new release, WHEN apt upgrade, THEN package updated"
+      - "GIVEN apt remove, WHEN executed, THEN clean removal"
+
+    independent_test: |
+      1. Add repository:
+         sudo add-apt-repository ppa:peternicholls/safedownload
+         (or configure apt sources manually)
+      2. Run: sudo apt update && sudo apt install safedownload
+      3. Verify: Package installed
+      4. Run: safedownload --version
+      5. Verify: Version displayed
+
+    definition_of_done:
+      - ".deb package builds correctly"
+      - "Package includes binary and man page"
+      - "Post-install script sets up state directory"
+      - "Tested on Ubuntu 22.04, 24.04, Debian 12"
+
+  - id: "US022-2"
+    priority: "P2"
+    title: "GPG-signed packages"
+    description: |
+      As a security-conscious user,
+      I want packages to be GPG-signed,
+      So that I can verify package authenticity.
+
+    acceptance_criteria:
+      - "GIVEN package downloaded, WHEN GPG checked, THEN signature valid"
+      - "GIVEN apt repository, WHEN added, THEN GPG key verified"
+      - "GIVEN unsigned package, WHEN apt install, THEN warning shown"
+
+    independent_test: |
+      1. Import GPG key: curl -fsSL https://example.com/safedownload.gpg | sudo apt-key add -
+      2. Install package
+      3. Verify: No GPG warnings during install
+
+    definition_of_done:
+      - "Package signing key created"
+      - "Packages signed during build"
+      - "Repository includes Release.gpg"
+
+  - id: "US022-3"
+    priority: "P3"
+    title: "APT repository hosting"
+    description: |
+      As a user,
+      I want a stable APT repository,
+      So that I can receive updates automatically.
+
+    acceptance_criteria:
+      - "GIVEN repository URL, WHEN added to sources.list, THEN packages available"
+      - "GIVEN apt update, WHEN run, THEN package list refreshed"
+      - "GIVEN repository, WHEN accessed, THEN HTTPS with valid certificate"
+
+    independent_test: |
+      1. Add to /etc/apt/sources.list.d/safedownload.list:
+         deb https://apt.safedownload.io stable main
+      2. Run: sudo apt update
+      3. Verify: "Hit:X https://apt.safedownload.io stable"
+      4. Run: apt-cache show safedownload
+      5. Verify: Package info displayed
+
+    definition_of_done:
+      - "APT repository hosted (GitHub Pages or dedicated hosting)"
+      - "HTTPS enabled"
+      - "Repository structure: dists/stable/main/"
+
+functional_requirements:
+  - id: "FR022-1"
+    description: "System MUST provide .deb package"
+    priority: "MUST"
+    test: "dpkg -i package.deb succeeds"
+
+  - id: "FR022-2"
+    description: "System MUST install binary to /usr/bin/safedownload"
+    priority: "MUST"
+    test: "which safedownload returns /usr/bin/safedownload"
+
+  - id: "FR022-3"
+    description: "System MUST GPG-sign packages"
+    priority: "MUST"
+    test: "dpkg-sig --verify package.deb"
+
+  - id: "FR022-4"
+    description: "System SHOULD host APT repository"
+    priority: "SHOULD"
+    test: "apt update from repository"
+
+implementation:
+  packaging:
+    - name: "debian/"
+      purpose: "Debian packaging files"
+      files:
+        - "debian/control (package metadata)"
+        - "debian/rules (build rules)"
+        - "debian/changelog"
+        - "debian/copyright"
+        - "debian/postinst (post-install script)"
+        - "debian/postrm (post-remove script)"
+
+  control_file:
+    template: |
+      Package: safedownload
+      Version: 1.3.0
+      Section: net
+      Priority: optional
+      Architecture: amd64
+      Maintainer: Peter Nicholls <peter@example.com>
+      Description: Secure, resumable download manager for the terminal
+       SafeDownload provides resumable downloads, checksum verification,
+       parallel downloads, and a modern TUI interface.
+      Homepage: https://github.com/peternicholls/SafeDownload
+
+  build:
+    - "dpkg-deb --build debian/ safedownload_1.3.0_amd64.deb"
+    - "dpkg-sig --sign builder safedownload_1.3.0_amd64.deb"
+
+  repository:
+    structure:
+      - "dists/stable/main/binary-amd64/Packages"
+      - "dists/stable/Release"
+      - "dists/stable/Release.gpg"
+      - "pool/main/s/safedownload/safedownload_1.3.0_amd64.deb"
+
+testing:
+  manual_tests:
+    - "Install on Ubuntu 22.04 LTS"
+    - "Install on Ubuntu 24.04 LTS"
+    - "Install on Debian 12"
+    - "Upgrade to new version"
+    - "Uninstall and verify cleanup"
+
+documentation:
+  readme_sections:
+    - section: "Installation"
+      changes: |
+        Add Debian/Ubuntu installation:
+        ```bash
+        # Add repository
+        echo "deb https://apt.safedownload.io stable main" | sudo tee /etc/apt/sources.list.d/safedownload.list
+        curl -fsSL https://apt.safedownload.io/safedownload.gpg | sudo apt-key add -
+
+        # Install
+        sudo apt update
+        sudo apt install safedownload
+        ```
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### Debian/Ubuntu Packages (v1.3.0)
+      - .deb packages for Debian 12+, Ubuntu 22.04+
+      - APT repository with GPG signing
+      - apt install safedownload
+
+sprint_tasks:
+  implementation:
+    - task: "T022-001"
+      description: "Create debian/ packaging files"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T022-002"
+      description: "Set up package signing"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T022-003"
+      description: "Set up APT repository"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T022-004"
+      description: "Create GitHub Action for .deb builds"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+  testing:
+    - task: "T022-005"
+      description: "Test on Ubuntu and Debian"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  documentation:
+    - task: "T022-006"
+      description: "Update README with apt instructions"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Debian package conventions:
+  - Binary: /usr/bin/safedownload
+  - Man page: /usr/share/man/man1/safedownload.1.gz
+  - State: ~/.safedownload/ (user-level)
+
+  Repository hosting options:
+  - GitHub Pages (free, simple)
+  - Dedicated server (more control)
+  - Launchpad PPA (Ubuntu-specific)
+
+  Supported distributions:
+  - Ubuntu 22.04 LTS (Jammy)
+  - Ubuntu 24.04 LTS (Noble)
+  - Debian 12 (Bookworm)
+  - Debian 13 (Trixie, when released)

@@ -1,0 +1,230 @@
+metadata:
+  id: "F021"
+  name: "Homebrew Tap"
+  version: "1.3.0"
+  sprint: 12
+  status: "planned"
+  priority: "P1"
+  story_points: 5
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Create a Homebrew tap for easy installation on macOS (and Linux via Homebrew),
+  enabling users to install and update SafeDownload with standard package
+  manager commands.
+
+  This feature implements one of the primary distribution channels per
+  Constitution Principle II (Zero-Configuration).
+
+constitution_compliance:
+  principles:
+    - id: "II"
+      name: "Zero-Configuration"
+      notes: "brew install provides frictionless installation on macOS"
+
+  gates:
+    - gate: "Distribution"
+      requirement: "brew install safedownload installs working binary"
+      test: "Manual: brew install and verify"
+
+user_stories:
+  - id: "US021-1"
+    priority: "P1"
+    title: "Install via Homebrew"
+    description: |
+      As a macOS user,
+      I want to install SafeDownload via Homebrew,
+      So that installation is familiar and easy.
+
+    acceptance_criteria:
+      - "GIVEN brew tap added, WHEN brew install safedownload, THEN binary installed"
+      - "GIVEN installed, WHEN safedownload --version, THEN version displayed"
+      - "GIVEN new release, WHEN brew upgrade safedownload, THEN binary updated"
+      - "GIVEN brew uninstall, WHEN executed, THEN clean removal"
+
+    independent_test: |
+      1. Run: brew tap peternicholls/safedownload
+      2. Run: brew install safedownload
+      3. Verify: "Installed safedownload v1.3.0"
+      4. Run: safedownload --version
+      5. Verify: "v1.3.0"
+      6. Run: which safedownload
+      7. Verify: /usr/local/bin/safedownload (or Homebrew prefix)
+
+    definition_of_done:
+      - "peternicholls/homebrew-safedownload repository created"
+      - "Formula safedownload.rb with proper version, URL, sha256"
+      - "Install tested on macOS Intel and Apple Silicon"
+      - "Upgrade tested with version bump"
+
+  - id: "US021-2"
+    priority: "P2"
+    title: "Auto-update formula on release"
+    description: |
+      As a maintainer,
+      I want the Homebrew formula updated automatically,
+      So that users get new versions without manual updates.
+
+    acceptance_criteria:
+      - "GIVEN new GitHub release, WHEN action runs, THEN formula updated"
+      - "GIVEN formula updated, WHEN PR created, THEN checksums correct"
+      - "GIVEN PR merged, WHEN brew update, THEN new version available"
+
+    independent_test: |
+      1. Create release v1.3.1 on GitHub
+      2. Verify: GitHub Action runs
+      3. Verify: PR opened in homebrew-safedownload repo
+      4. Merge PR
+      5. Run: brew update && brew upgrade safedownload
+      6. Verify: v1.3.1 installed
+
+    definition_of_done:
+      - "GitHub Action for formula updates"
+      - "Automated PR to tap repository"
+      - "Checksum auto-calculation"
+
+functional_requirements:
+  - id: "FR021-1"
+    description: "System MUST provide Homebrew formula"
+    priority: "MUST"
+    test: "brew install succeeds"
+
+  - id: "FR021-2"
+    description: "System MUST install working binary"
+    priority: "MUST"
+    test: "safedownload --version works after install"
+
+  - id: "FR021-3"
+    description: "System MUST support brew upgrade"
+    priority: "MUST"
+    test: "Upgrade from v1.3.0 to v1.3.1"
+
+  - id: "FR021-4"
+    description: "System SHOULD auto-update formula on release"
+    priority: "SHOULD"
+    test: "Formula updated after GitHub release"
+
+implementation:
+  repositories:
+    - name: "peternicholls/homebrew-safedownload"
+      purpose: "Homebrew tap repository"
+      files:
+        - "Formula/safedownload.rb"
+        - "README.md"
+        - ".github/workflows/release.yml"
+
+  formula:
+    file: "Formula/safedownload.rb"
+    template: |
+      class Safedownload < Formula
+        desc "Secure, resumable download manager for the terminal"
+        homepage "https://github.com/peternicholls/SafeDownload"
+        version "1.3.0"
+
+        on_macos do
+          if Hardware::CPU.arm?
+            url "https://github.com/peternicholls/SafeDownload/releases/download/v1.3.0/safedownload-darwin-arm64"
+            sha256 "abc123..."
+          else
+            url "https://github.com/peternicholls/SafeDownload/releases/download/v1.3.0/safedownload-darwin-amd64"
+            sha256 "def456..."
+          end
+        end
+
+        on_linux do
+          url "https://github.com/peternicholls/SafeDownload/releases/download/v1.3.0/safedownload-linux-amd64"
+          sha256 "ghi789..."
+        end
+
+        def install
+          bin.install Dir["safedownload-*"].first => "safedownload"
+        end
+
+        test do
+          system "#{bin}/safedownload", "--version"
+        end
+      end
+
+  automation:
+    - name: ".github/workflows/release.yml"
+      trigger: "repository_dispatch from main repo on release"
+      steps:
+        - "Download release assets"
+        - "Calculate checksums"
+        - "Update formula"
+        - "Create PR"
+
+testing:
+  manual_tests:
+    - "Install on macOS Intel"
+    - "Install on macOS Apple Silicon"
+    - "Install on Linux via Homebrew"
+    - "Upgrade to new version"
+    - "Uninstall completely"
+
+documentation:
+  readme_sections:
+    - section: "Installation"
+      changes: |
+        Add Homebrew installation:
+        ```bash
+        brew tap peternicholls/safedownload
+        brew install safedownload
+        ```
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### Homebrew Distribution (v1.3.0)
+      - brew tap peternicholls/safedownload
+      - brew install safedownload
+      - Supports macOS Intel, Apple Silicon, and Linux
+
+sprint_tasks:
+  implementation:
+    - task: "T021-001"
+      description: "Create homebrew-safedownload repository"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+    - task: "T021-002"
+      description: "Write Homebrew formula"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T021-003"
+      description: "Test formula on macOS Intel and ARM"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T021-004"
+      description: "Create auto-update GitHub Action"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+  documentation:
+    - task: "T021-005"
+      description: "Update README with Homebrew instructions"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+    - task: "T021-006"
+      description: "Create tap repository README"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Homebrew tap structure:
+  - Repository: peternicholls/homebrew-safedownload
+  - Formula: Formula/safedownload.rb
+  - Users add tap: brew tap peternicholls/safedownload
+  - Then install: brew install safedownload
+
+  Auto-update workflow:
+  1. Main repo releases new version
+  2. GitHub Action dispatches to tap repo
+  3. Tap repo workflow downloads assets
+  4. Calculates checksums
+  5. Updates formula
+  6. Creates PR (or auto-merges)

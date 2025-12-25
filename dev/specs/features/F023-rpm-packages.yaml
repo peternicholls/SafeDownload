@@ -1,0 +1,192 @@
+metadata:
+  id: "F023"
+  name: "RPM Packages (Fedora/RHEL)"
+  version: "1.3.0"
+  sprint: 13
+  status: "planned"
+  priority: "P3"
+  story_points: 8
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Create .rpm packages for Fedora and RHEL distributions, enabling users
+  to install SafeDownload via dnf/yum with standard system integration.
+
+  This feature extends distribution support to enterprise Linux distributions.
+
+constitution_compliance:
+  principles:
+    - id: "II"
+      name: "Zero-Configuration"
+      notes: "dnf install provides standard enterprise Linux installation"
+
+user_stories:
+  - id: "US023-1"
+    priority: "P3"
+    title: "Install via dnf/yum"
+    description: |
+      As a Fedora/RHEL user,
+      I want to install SafeDownload via dnf,
+      So that installation follows system conventions.
+
+    acceptance_criteria:
+      - "GIVEN dnf repository configured, WHEN dnf install safedownload, THEN package installed"
+      - "GIVEN installed, WHEN safedownload --version, THEN version displayed"
+      - "GIVEN new release, WHEN dnf upgrade, THEN package updated"
+
+    independent_test: |
+      1. Add repository: sudo dnf config-manager --add-repo https://rpm.safedownload.io/safedownload.repo
+      2. Run: sudo dnf install safedownload
+      3. Verify: Package installed
+      4. Run: safedownload --version
+      5. Verify: Version displayed
+
+    definition_of_done:
+      - ".rpm package builds correctly"
+      - "Package includes binary"
+      - "Tested on Fedora 39+, RHEL 9+"
+
+  - id: "US023-2"
+    priority: "P3"
+    title: "GPG-signed packages"
+    description: |
+      As a security-conscious user,
+      I want packages to be GPG-signed,
+      So that I can verify authenticity.
+
+    acceptance_criteria:
+      - "GIVEN package downloaded, WHEN rpm -K, THEN signature valid"
+      - "GIVEN dnf repository, WHEN added, THEN GPG key verified"
+
+    independent_test: |
+      1. Import GPG key: sudo rpm --import https://rpm.safedownload.io/RPM-GPG-KEY-safedownload
+      2. Install package
+      3. Run: rpm -K safedownload-1.3.0.rpm
+      4. Verify: "digests signatures OK"
+
+    definition_of_done:
+      - "Package signing key created"
+      - "Packages signed during build"
+      - "Repository includes GPG key"
+
+functional_requirements:
+  - id: "FR023-1"
+    description: "System MUST provide .rpm package"
+    priority: "MUST"
+    test: "rpm -i package.rpm succeeds"
+
+  - id: "FR023-2"
+    description: "System MUST GPG-sign packages"
+    priority: "MUST"
+    test: "rpm -K verifies signature"
+
+  - id: "FR023-3"
+    description: "System SHOULD host YUM/DNF repository"
+    priority: "SHOULD"
+    test: "dnf update from repository"
+
+implementation:
+  packaging:
+    - name: "rpm/"
+      purpose: "RPM packaging files"
+      files:
+        - "safedownload.spec (RPM spec file)"
+
+  spec_file:
+    template: |
+      Name:           safedownload
+      Version:        1.3.0
+      Release:        1%{?dist}
+      Summary:        Secure, resumable download manager for the terminal
+
+      License:        MIT
+      URL:            https://github.com/peternicholls/SafeDownload
+      Source0:        %{name}-%{version}.tar.gz
+
+      %description
+      SafeDownload provides resumable downloads, checksum verification,
+      parallel downloads, and a modern TUI interface.
+
+      %install
+      mkdir -p %{buildroot}%{_bindir}
+      install -m 755 safedownload %{buildroot}%{_bindir}/
+
+      %files
+      %{_bindir}/safedownload
+
+  build:
+    - "rpmbuild -ba safedownload.spec"
+    - "rpm --addsign safedownload-1.3.0.rpm"
+
+testing:
+  manual_tests:
+    - "Install on Fedora 39"
+    - "Install on Fedora 40"
+    - "Install on RHEL 9"
+    - "Upgrade to new version"
+
+documentation:
+  readme_sections:
+    - section: "Installation"
+      changes: |
+        Add Fedora/RHEL installation:
+        ```bash
+        # Add repository
+        sudo dnf config-manager --add-repo https://rpm.safedownload.io/safedownload.repo
+
+        # Install
+        sudo dnf install safedownload
+        ```
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### RPM Packages (v1.3.0)
+      - .rpm packages for Fedora 39+, RHEL 9+
+      - DNF/YUM repository with GPG signing
+      - dnf install safedownload
+
+sprint_tasks:
+  implementation:
+    - task: "T023-001"
+      description: "Create RPM spec file"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T023-002"
+      description: "Set up package signing"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T023-003"
+      description: "Set up YUM/DNF repository"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T023-004"
+      description: "Create GitHub Action for .rpm builds"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+  testing:
+    - task: "T023-005"
+      description: "Test on Fedora and RHEL"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  documentation:
+    - task: "T023-006"
+      description: "Update README"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Supported distributions:
+  - Fedora 39, 40
+  - RHEL 9+
+  - CentOS Stream 9
+
+  RPM conventions:
+  - Binary: /usr/bin/safedownload
+  - Spec file defines all metadata and build steps

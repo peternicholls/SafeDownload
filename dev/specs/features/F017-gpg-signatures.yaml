@@ -1,0 +1,238 @@
+metadata:
+  id: "F017"
+  name: "GPG Signature Verification"
+  version: "1.2.0"
+  sprint: 9
+  status: "planned"
+  priority: "P2"
+  story_points: 8
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Add GPG signature verification for downloaded files, enabling cryptographic
+  verification of authenticity in addition to checksum integrity. This supports
+  software distribution workflows where publishers sign releases.
+
+  This feature extends Constitution Principle IV (Verification & Trust) with
+  cryptographic authenticity verification beyond checksums.
+
+constitution_compliance:
+  principles:
+    - id: "IV"
+      name: "Verification & Trust"
+      notes: |
+        GPG signatures verify authenticity (who signed it),
+        complementing checksums (what it contains).
+
+    - id: "X"
+      name: "Security Posture"
+      notes: "GPG verification is security-critical and must fail-safe"
+
+  gates:
+    - gate: "Security"
+      requirement: "Invalid signatures MUST reject download"
+      test: "tests/e2e/gpg_verification_test.bats"
+
+user_stories:
+  - id: "US017-1"
+    priority: "P2"
+    title: "Verify GPG signatures"
+    description: |
+      As a security-conscious user,
+      I want to verify GPG signatures for downloads,
+      So that I know the file is authentic.
+
+    acceptance_criteria:
+      - "GIVEN --verify-sig flag with .asc URL, WHEN download completes, THEN signature verified"
+      - "GIVEN valid signature, WHEN verified, THEN download succeeds with '✓ Signature valid (key: ABC123)'"
+      - "GIVEN invalid signature, WHEN verification fails, THEN download rejected with error"
+      - "GIVEN missing public key, WHEN verification attempted, THEN error with key ID to import"
+      - "GIVEN /verify command in TUI, WHEN used, THEN same behavior as --verify-sig"
+
+    independent_test: |
+      1. Import public key: gpg --import publisher.pub
+      2. Run: safedownload add --verify-sig https://example.com/app.tar.gz.asc https://example.com/app.tar.gz
+      3. Wait for download
+      4. Verify: Output shows "✓ Signature valid (key: ABC123DEF456)"
+      5. Test with tampered file
+      6. Verify: "✗ Signature verification failed"
+
+    definition_of_done:
+      - "--verify-sig flag implemented"
+      - "GPG keyring integration"
+      - "Clear success/failure messages with key info"
+      - "Automatic .asc download if URL ends with .asc"
+
+  - id: "US017-2"
+    priority: "P2"
+    title: "GPG key management hints"
+    description: |
+      As a user missing a public key,
+      I want clear instructions on importing it,
+      So that I can complete verification.
+
+    acceptance_criteria:
+      - "GIVEN missing key, WHEN error shown, THEN key ID displayed"
+      - "GIVEN error, WHEN shown, THEN import command suggested"
+      - "GIVEN --import-key flag, WHEN used with keyserver URL, THEN key imported automatically"
+
+    independent_test: |
+      1. Try to verify without public key
+      2. Verify: Error shows "Missing key: ABC123. Import with: gpg --keyserver keys.openpgp.org --recv-keys ABC123"
+      3. Import key as suggested
+      4. Retry verification
+      5. Verify: Success
+
+    definition_of_done:
+      - "Missing key error shows key ID"
+      - "Import command suggested in error"
+      - "--import-key optional convenience flag"
+
+  - id: "US017-3"
+    priority: "P2"
+    title: "Signature verification logging"
+    description: |
+      As an auditor,
+      I want signature verification logged,
+      So that I can review security decisions.
+
+    acceptance_criteria:
+      - "GIVEN verification success, WHEN logged, THEN includes key ID, fingerprint, signer"
+      - "GIVEN verification failure, WHEN logged, THEN includes reason and details"
+      - "GIVEN signature check, WHEN performed, THEN timestamp logged"
+
+    independent_test: |
+      1. Download with --verify-sig
+      2. Check safedownload.log
+      3. Verify: Entry like "GPG: Verified app.tar.gz with key ABC123 (signer: Publisher <pub@example.com>) at 2026-01-15T10:30:00Z"
+
+    definition_of_done:
+      - "Verification success/failure logged"
+      - "Key details in log (ID, fingerprint, signer)"
+      - "Timestamp for audit trail"
+
+functional_requirements:
+  - id: "FR017-1"
+    description: "System MUST verify GPG signatures via --verify-sig flag"
+    priority: "MUST"
+    test: "Verify valid signature succeeds"
+
+  - id: "FR017-2"
+    description: "System MUST reject downloads with invalid signatures"
+    priority: "MUST"
+    test: "Invalid signature fails download"
+
+  - id: "FR017-3"
+    description: "System MUST display key ID on missing key error"
+    priority: "MUST"
+    test: "Missing key shows import instructions"
+
+  - id: "FR017-4"
+    description: "System MUST log all verification attempts"
+    priority: "MUST"
+    test: "Check log after verification"
+
+  - id: "FR017-5"
+    description: "System SHOULD auto-download .asc file if specified"
+    priority: "SHOULD"
+    test: "Download file.tar.gz, auto-fetch file.tar.gz.asc"
+
+implementation:
+  packages:
+    - name: "pkg/crypto"
+      purpose: "GPG signature verification"
+      new_files:
+        - "pkg/crypto/gpg.go (GPG verification)"
+        - "pkg/crypto/keyring.go (keyring access)"
+        - "pkg/crypto/gpg_test.go"
+
+    - name: "cmd/safedownload/commands"
+      modified_files:
+        - "add.go (--verify-sig flag)"
+
+  cli:
+    new_flags:
+      - flag: "--verify-sig"
+        type: "string"
+        description: "URL to .asc signature file (or 'auto' to fetch .asc automatically)"
+
+      - flag: "--import-key"
+        type: "string"
+        description: "Keyserver URL to import missing keys from"
+
+  dependencies:
+    external:
+      - name: "System GPG (gpg command)"
+        notes: "Uses system GPG installation for keyring"
+
+      - name: "golang.org/x/crypto/openpgp (optional)"
+        notes: "For embedded verification without system GPG"
+
+testing:
+  unit_tests:
+    - file: "pkg/crypto/gpg_test.go"
+      functions:
+        - "TestGPG_VerifyValid"
+        - "TestGPG_VerifyInvalid"
+        - "TestGPG_MissingKey"
+      coverage_target: "90%"
+
+  e2e_tests:
+    - file: "tests/e2e/gpg_verification_test.bats"
+      scenarios:
+        - "Valid signature verification"
+        - "Invalid signature rejection"
+        - "Missing key error handling"
+
+documentation:
+  changelog:
+    type: "Added"
+    entry: |
+      ### GPG Signature Verification (v1.2.0)
+      - --verify-sig flag for cryptographic authenticity
+      - System GPG keyring integration
+      - Clear error messages with import instructions
+      - Verification logged for audit
+
+sprint_tasks:
+  implementation:
+    - task: "T017-001"
+      description: "Implement GPG verification (pkg/crypto/gpg.go)"
+      assignee: "@peternicholls"
+      estimate: "3 SP"
+
+    - task: "T017-002"
+      description: "Implement keyring access"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T017-003"
+      description: "Add --verify-sig CLI flag"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T017-004"
+      description: "Implement auto-.asc download"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T017-005"
+      description: "Write unit and E2E tests"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+  documentation:
+    - task: "T017-006"
+      description: "Document GPG verification workflow"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  GPG verification complements checksums:
+  - Checksum: Verifies integrity (file wasn't corrupted)
+  - GPG: Verifies authenticity (file was signed by trusted party)
+
+  Uses system GPG installation for keyring management.
+  Consider embedded openpgp library for environments without GPG.

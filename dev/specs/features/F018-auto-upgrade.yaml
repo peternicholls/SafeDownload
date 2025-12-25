@@ -1,0 +1,289 @@
+metadata:
+  id: "F018"
+  name: "Auto-Upgrade Mechanism"
+  version: "1.2.0"
+  sprint: 9
+  status: "planned"
+  priority: "P2"
+  story_points: 8
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Implement self-upgrade capability that checks for new versions, downloads
+  updates, verifies checksums, and replaces the binary with rollback support.
+
+  This feature enables users to stay current without manual installation,
+  supporting Constitution Principle X (Security Posture) by ensuring
+  security updates are easily applied.
+
+constitution_compliance:
+  principles:
+    - id: "X"
+      name: "Security Posture"
+      notes: "Easy upgrades enable security patches to be applied quickly"
+
+    - id: "IV"
+      name: "Verification & Trust"
+      notes: "Upgrades verified via checksum before applying"
+
+    - id: "II"
+      name: "Zero-Configuration"
+      notes: "Upgrade is one command, no manual download/install"
+
+  gates:
+    - gate: "Security"
+      requirement: "Upgrade binary MUST be checksum-verified"
+      test: "tests/e2e/upgrade_test.bats"
+
+    - gate: "Rollback"
+      requirement: "Failed upgrade MUST restore previous version"
+      test: "TestUpgrade_Rollback"
+
+user_stories:
+  - id: "US018-1"
+    priority: "P2"
+    title: "Check for updates"
+    description: |
+      As a user,
+      I want to check if a new version is available,
+      So that I know when to upgrade.
+
+    acceptance_criteria:
+      - "GIVEN --check-update flag, WHEN run, THEN shows current and latest version"
+      - "GIVEN new version available, WHEN checked, THEN shows 'Update available: v1.2.1'"
+      - "GIVEN already latest, WHEN checked, THEN shows 'Already up to date (v1.2.0)'"
+      - "GIVEN /check-update TUI command, WHEN used, THEN same behavior"
+
+    independent_test: |
+      1. Run: safedownload --check-update
+      2. Verify: Output like "Current: v1.2.0, Latest: v1.2.1"
+      3. Verify: "Update available! Run 'safedownload --upgrade' to update."
+
+    definition_of_done:
+      - "GitHub API version check"
+      - "--check-update flag"
+      - "Clear comparison output"
+
+  - id: "US018-2"
+    priority: "P2"
+    title: "Self-upgrade"
+    description: |
+      As a user,
+      I want to upgrade SafeDownload with one command,
+      So that I stay current without manual steps.
+
+    acceptance_criteria:
+      - "GIVEN --upgrade flag, WHEN run, THEN downloads new binary"
+      - "GIVEN new binary downloaded, WHEN verified, THEN checksum matches release"
+      - "GIVEN verification succeeds, WHEN applied, THEN binary replaced"
+      - "GIVEN upgrade complete, WHEN run, THEN new version confirmed"
+      - "GIVEN /upgrade TUI command, WHEN used, THEN same behavior"
+
+    independent_test: |
+      1. Run: safedownload --upgrade
+      2. Verify: "Downloading v1.2.1 for darwin-arm64..."
+      3. Verify: "Verifying checksum..."
+      4. Verify: "Upgrade complete! Restart SafeDownload to use v1.2.1"
+      5. Restart and run: safedownload --version
+      6. Verify: "v1.2.1"
+
+    definition_of_done:
+      - "Download from GitHub Releases"
+      - "Platform detection (OS/arch)"
+      - "Checksum verification"
+      - "Binary replacement"
+      - "Success confirmation"
+
+  - id: "US018-3"
+    priority: "P2"
+    title: "Rollback on failure"
+    description: |
+      As a user,
+      I want automatic rollback if upgrade fails,
+      So that I'm not left with a broken installation.
+
+    acceptance_criteria:
+      - "GIVEN upgrade started, WHEN old binary backed up, THEN saved as safedownload.bak"
+      - "GIVEN checksum fails, WHEN detected, THEN rollback to backup"
+      - "GIVEN new binary crashes on start, WHEN detected, THEN rollback suggested"
+      - "GIVEN --rollback flag, WHEN run, THEN restores safedownload.bak"
+
+    independent_test: |
+      1. Simulate failed upgrade (corrupt download)
+      2. Verify: "Checksum verification failed. Rolling back..."
+      3. Verify: Old version restored
+      4. Run: safedownload --version
+      5. Verify: Original version still works
+
+    definition_of_done:
+      - "Backup old binary before upgrade"
+      - "Automatic rollback on failure"
+      - "--rollback manual restore option"
+
+functional_requirements:
+  - id: "FR018-1"
+    description: "System MUST check GitHub Releases for latest version"
+    priority: "MUST"
+    test: "Version check returns latest release"
+
+  - id: "FR018-2"
+    description: "System MUST verify checksum before applying upgrade"
+    priority: "MUST"
+    test: "Checksum verified matches release"
+
+  - id: "FR018-3"
+    description: "System MUST backup old binary before upgrade"
+    priority: "MUST"
+    test: "Backup file created"
+
+  - id: "FR018-4"
+    description: "System MUST rollback on upgrade failure"
+    priority: "MUST"
+    test: "Rollback restores working binary"
+
+  - id: "FR018-5"
+    description: "System SHOULD support --rollback for manual restore"
+    priority: "SHOULD"
+    test: "Manual rollback works"
+
+implementation:
+  packages:
+    - name: "pkg/upgrade"
+      purpose: "Self-upgrade functionality"
+      new_files:
+        - "pkg/upgrade/version.go (version comparison)"
+        - "pkg/upgrade/github.go (GitHub API client)"
+        - "pkg/upgrade/download.go (binary download)"
+        - "pkg/upgrade/install.go (binary replacement)"
+        - "pkg/upgrade/rollback.go (backup and restore)"
+        - "pkg/upgrade/upgrade_test.go"
+
+    - name: "cmd/safedownload/commands"
+      new_files:
+        - "upgrade.go (upgrade command)"
+      modified_files:
+        - "root.go (--check-update, --upgrade, --rollback flags)"
+
+  cli:
+    new_flags:
+      - flag: "--check-update"
+        type: "boolean"
+        description: "Check if a new version is available"
+
+      - flag: "--upgrade"
+        type: "boolean"
+        description: "Download and install latest version"
+
+      - flag: "--rollback"
+        type: "boolean"
+        description: "Restore previous version from backup"
+
+    new_commands:
+      - command: "/check-update"
+        description: "Check for updates in TUI"
+
+      - command: "/upgrade"
+        description: "Upgrade SafeDownload in TUI"
+
+  api:
+    - endpoint: "https://api.github.com/repos/peternicholls/SafeDownload/releases/latest"
+      method: "GET"
+      purpose: "Get latest release info"
+
+testing:
+  unit_tests:
+    - file: "pkg/upgrade/version_test.go"
+      functions:
+        - "TestVersion_Compare"
+        - "TestVersion_Parse"
+      coverage_target: "100%"
+
+    - file: "pkg/upgrade/github_test.go"
+      functions:
+        - "TestGitHub_GetLatestRelease"
+      coverage_target: "80%"
+
+  integration_tests:
+    - file: "tests/integration/upgrade_test.go"
+      scenarios:
+        - "Full upgrade cycle"
+        - "Rollback on failure"
+
+  e2e_tests:
+    - file: "tests/e2e/upgrade_test.bats"
+      scenarios:
+        - "Check for updates"
+        - "Upgrade to latest"
+        - "Rollback after failure"
+
+documentation:
+  changelog:
+    type: "Added"
+    entry: |
+      ### Auto-Upgrade (v1.2.0)
+      - --check-update: Check for new versions
+      - --upgrade: Self-update with checksum verification
+      - --rollback: Restore previous version
+      - Automatic rollback on failed upgrades
+
+edge_cases:
+  - case: "Network unavailable during upgrade"
+    expected_behavior: "Error, no changes made"
+    test: "TestUpgrade_NetworkError"
+
+  - case: "Insufficient permissions to replace binary"
+    expected_behavior: "Error with 'sudo safedownload --upgrade' suggestion"
+    test: "TestUpgrade_PermissionError"
+
+  - case: "Disk full during download"
+    expected_behavior: "Error, partial download cleaned up"
+    test: "TestUpgrade_DiskFull"
+
+sprint_tasks:
+  implementation:
+    - task: "T018-001"
+      description: "Implement version checking (GitHub API)"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+    - task: "T018-002"
+      description: "Implement binary download with checksum"
+      assignee: "@peternicholls"
+      estimate: "2 SP"
+
+    - task: "T018-003"
+      description: "Implement backup and rollback"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+    - task: "T018-004"
+      description: "Implement CLI flags and TUI commands"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+  testing:
+    - task: "T018-005"
+      description: "Write tests"
+      assignee: "@peternicholls"
+      estimate: "1.5 SP"
+
+  documentation:
+    - task: "T018-006"
+      description: "Document upgrade workflow"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Upgrade flow:
+  1. Check latest version via GitHub API
+  2. Download binary for current platform
+  3. Verify checksum against release
+  4. Backup current binary
+  5. Replace with new binary
+  6. Confirm success (or rollback)
+
+  Security considerations:
+  - Only download from official GitHub releases
+  - Verify SHA256 checksum
+  - Future: Add GPG signature verification (F017)
