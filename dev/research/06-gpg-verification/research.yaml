@@ -1,0 +1,151 @@
+# R06: GPG Signature Verification Research
+# Supporting Feature: F017 (GPG Signatures)
+# Target Version: v1.2.0 Velocity
+
+metadata:
+  id: "R06"
+  name: "GPG Signature Verification"
+  folder: "06-gpg-verification"
+  target_version: "1.2.0"
+  priority: "P2"
+  status: "not_started"
+  estimated_hours: 3
+  actual_hours: 0
+  assigned_to: null
+  blocks_features:
+    - "F017"
+  depends_on: []
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  started: null
+  completed: null
+
+objectives:
+  primary:
+    - goal: "Evaluate pure Go vs system gpg binary approach"
+      description: "Compare go-crypto libraries vs subprocess to gpg"
+      success_criteria: "Decision with rationale"
+      status: "not_started"
+
+    - goal: "Understand GPG keyring integration"
+      description: "How to access user's existing GPG keys"
+      success_criteria: "Keyring access implementation guide"
+      status: "not_started"
+
+    - goal: "Define key management UX"
+      description: "User experience for missing/expired keys"
+      success_criteria: "UX specification for key scenarios"
+      status: "not_started"
+
+key_questions:
+  critical:
+    - question: "Pure Go vs subprocess to gpg?"
+      context: "Constitution prefers minimal dependencies"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to handle missing GPG keys?"
+      context: "User may not have required key to verify signature"
+      answer: null
+      confidence: null
+      sources: []
+
+sources:
+  libraries:
+    - name: "ProtonMail/go-crypto"
+      url: "https://github.com/ProtonMail/go-crypto"
+      stars: 800
+      license: "BSD-3-Clause"
+      relevance: "Pure Go OpenPGP implementation"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+    - name: "keybase/go-crypto"
+      url: "https://github.com/keybase/go-crypto"
+      stars: 200
+      license: "BSD-3-Clause"
+      relevance: "Keybase's enhanced OpenPGP fork"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+constitution_alignment:
+  principles:
+    - id: "X"
+      name: "Security Posture"
+      relevance: "GPG verification is defense-in-depth"
+      compliance_notes: null
+
+    - id: "II"
+      name: "Optional Enhanced Features"
+      relevance: "GPG verification should be optional"
+      compliance_notes: null
+
+tasks:
+  - id: "T001"
+    description: "Evaluate ProtonMail/go-crypto"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T002"
+    description: "Research system gpg subprocess approach"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T003"
+    description: "Design key management UX"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T004"
+    description: "Document implementation approach"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+findings:
+  discoveries: []
+  comparisons:
+    - category: "GPG Implementation Approach"
+      options:
+        - name: "Pure Go (go-crypto)"
+          pros:
+            - "No external dependency"
+            - "Consistent behavior across platforms"
+          cons:
+            - "May not support all GPG features"
+            - "Need to handle keyring separately"
+          score: null
+        - name: "System gpg subprocess"
+          pros:
+            - "Full GPG feature support"
+            - "Uses user's existing keyring"
+          cons:
+            - "External dependency"
+            - "May not be installed"
+          score: null
+
+decisions: []
+
+integration:
+  feature_specs:
+    - feature_id: "F017"
+      feature_name: "GPG Signature Verification"
+      updates_required:
+        - section: "implementation"
+          change: "Document chosen approach"
+          status: "pending"
+
+log:
+  entries: []
+
+summary:
+  executive_summary: null
+  recommendations: []
+  open_questions: []
+  overall_confidence: null

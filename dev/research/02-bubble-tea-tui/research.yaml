@@ -1,0 +1,449 @@
+# R02: Bubble Tea TUI Framework Research
+# Supporting Feature: F014 (Bubble Tea TUI Framework)
+# Target Version: v1.1.0 Bubble
+
+metadata:
+  id: "R02"
+  name: "Bubble Tea TUI Framework"
+  folder: "02-bubble-tea-tui"
+  target_version: "1.1.0"
+  priority: "P0"
+  status: "not_started"
+  estimated_hours: 6
+  actual_hours: 0
+  assigned_to: null
+  blocks_features:
+    - "F014"
+    - "F015"
+  depends_on: []
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  started: null
+  completed: null
+
+# =============================================================================
+# RESEARCH OBJECTIVES
+# =============================================================================
+
+objectives:
+  primary:
+    - goal: "Master Elm Architecture in Go context"
+      description: |
+        Understand the Model/Update/View pattern used by Bubble Tea,
+        including message passing, command execution, and state management.
+      success_criteria: "Can implement basic Bubble Tea app from scratch"
+      status: "not_started"
+
+    - goal: "Study large-scale Bubble Tea applications"
+      description: |
+        Analyze how production apps like lazygit handle complex UIs,
+        large data sets, and multiple views/panels.
+      success_criteria: "Documented patterns from 2+ large projects"
+      status: "not_started"
+
+    - goal: "Understand performance optimization techniques"
+      description: |
+        Research how to maintain <500ms startup and 60fps rendering
+        with large download queues and real-time updates.
+      success_criteria: "Performance optimization checklist"
+      status: "not_started"
+
+    - goal: "Learn component composition patterns"
+      description: |
+        How to build reusable components (header, footer, list, progress bar)
+        that compose into a larger application.
+      success_criteria: "Component library architecture design"
+      status: "not_started"
+
+  secondary:
+    - goal: "Evaluate testing strategies for TUI code"
+      description: "Golden file testing, snapshot testing, unit testing approaches"
+      success_criteria: "Testing strategy document"
+      status: "not_started"
+
+    - goal: "Research theme switching implementation"
+      description: "How to implement runtime theme switching with Lip Gloss"
+      success_criteria: "Theme system design"
+      status: "not_started"
+
+# =============================================================================
+# KEY QUESTIONS
+# =============================================================================
+
+key_questions:
+  critical:
+    - question: "How do large Bubble Tea apps handle 100+ list items without lag?"
+      context: |
+        SafeDownload may have large download queues. Need to ensure
+        scrolling and rendering remain smooth with many items.
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "Best practices for real-time updates without flicker?"
+      context: |
+        Progress bars update frequently. Need to batch updates
+        and avoid unnecessary re-renders.
+      answer: null
+      confidence: null
+      sources: []
+
+  important:
+    - question: "How to implement virtual scrolling in Bubble Tea?"
+      context: "Only render visible items for performance"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "Testing strategies for TUI components?"
+      context: "Need automated testing for TUI without manual interaction"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to handle terminal resize events gracefully?"
+      context: "Layout must adapt to different terminal sizes"
+      answer: null
+      confidence: null
+      sources: []
+
+  exploratory:
+    - question: "Can we share components with a future web UI?"
+      context: "v2.0.0 includes web dashboard; shared logic would be valuable"
+      answer: null
+      confidence: null
+      sources: []
+
+# =============================================================================
+# SOURCES TO INVESTIGATE
+# =============================================================================
+
+sources:
+  libraries:
+    - name: "bubbletea"
+      url: "https://github.com/charmbracelet/bubbletea"
+      stars: 23000
+      license: "MIT"
+      last_commit: null
+      relevance: "Core TUI framework (mandated by constitution)"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: "use" # Pre-decided by constitution
+
+    - name: "lipgloss"
+      url: "https://github.com/charmbracelet/lipgloss"
+      stars: 7000
+      license: "MIT"
+      last_commit: null
+      relevance: "Styling library for Bubble Tea"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: "use" # Standard companion library
+
+    - name: "bubbles"
+      url: "https://github.com/charmbracelet/bubbles"
+      stars: 4500
+      license: "MIT"
+      last_commit: null
+      relevance: "Pre-built components (spinner, progress, textinput)"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: "use" # Standard companion library
+
+    - name: "harmonica"
+      url: "https://github.com/charmbracelet/harmonica"
+      stars: 400
+      license: "MIT"
+      last_commit: null
+      relevance: "Physics-based animations for Bubble Tea"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+  documentation:
+    - name: "Bubble Tea Tutorial"
+      url: "https://github.com/charmbracelet/bubbletea/tree/master/tutorials"
+      type: "official"
+      relevance: "Official getting started guide"
+      read_status: "not_read"
+      notes: null
+
+    - name: "The Elm Architecture"
+      url: "https://guide.elm-lang.org/architecture/"
+      type: "official"
+      relevance: "Understanding the architecture Bubble Tea is based on"
+      read_status: "not_read"
+      notes: null
+
+    - name: "Lip Gloss Examples"
+      url: "https://github.com/charmbracelet/lipgloss/tree/master/examples"
+      type: "official"
+      relevance: "Styling patterns and theme ideas"
+      read_status: "not_read"
+      notes: null
+
+  projects:
+    - name: "lazygit"
+      url: "https://github.com/jesseduffield/lazygit"
+      stars: 44000
+      relevance: |
+        Complex Bubble Tea app with:
+        - Multiple panels
+        - Large data handling (git history)
+        - Keyboard navigation
+        - Context menus
+      study_status: "not_studied"
+      key_files:
+        - "pkg/gui/gui.go"
+        - "pkg/gui/keybindings.go"
+        - "pkg/gui/views.go"
+      notes: null
+
+    - name: "glow"
+      url: "https://github.com/charmbracelet/glow"
+      stars: 14000
+      relevance: "Charm's own showcase app; best practices example"
+      study_status: "not_studied"
+      key_files:
+        - "main.go"
+        - "ui.go"
+      notes: null
+
+    - name: "soft-serve"
+      url: "https://github.com/charmbracelet/soft-serve"
+      stars: 4500
+      relevance: "Git server with TUI; shows server + TUI integration"
+      study_status: "not_studied"
+      key_files:
+        - "server/ui/"
+      notes: null
+
+    - name: "plandex"
+      url: "https://github.com/plandex-ai/plandex"
+      stars: 10000
+      relevance: "AI agent with TUI; shows real-time updates"
+      study_status: "not_studied"
+      key_files: []
+      notes: null
+
+    - name: "circumflex"
+      url: "https://github.com/bensadeh/circumflex"
+      stars: 3000
+      relevance: "News reader TUI; shows list handling"
+      study_status: "not_studied"
+      key_files: []
+      notes: null
+
+# =============================================================================
+# CONSTITUTION ALIGNMENT
+# =============================================================================
+
+constitution_alignment:
+  principles:
+    - id: "I"
+      name: "Professional User Experience"
+      relevance: "TUI must be gorgeous, professional, non-intrusive"
+      compliance_notes: null
+
+    - id: "VI"
+      name: "Slash Command Interface"
+      relevance: "TUI must support slash commands"
+      compliance_notes: null
+
+    - id: "XI"
+      name: "Accessibility"
+      relevance: "Themes, keyboard navigation, screen reader support"
+      compliance_notes: null
+
+  gates:
+    - gate: "Performance"
+      requirement: "TUI startup <500ms"
+      research_relevance: "Must understand Bubble Tea initialization overhead"
+      findings: null
+
+    - gate: "Performance"
+      requirement: "List downloads <100ms even with 100+ items"
+      research_relevance: "Virtual scrolling and efficient rendering"
+      findings: null
+
+    - gate: "Accessibility"
+      requirement: "High-contrast theme, keyboard-only navigation"
+      research_relevance: "Lip Gloss theming, key binding patterns"
+      findings: null
+
+  conflicts: []
+
+# =============================================================================
+# TASKS
+# =============================================================================
+
+tasks:
+  - id: "T001"
+    description: "Read Bubble Tea tutorials and documentation"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T002"
+    description: "Build simple Bubble Tea app (hello world, counter)"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T003"
+    description: "Study lazygit source code (panels, navigation)"
+    estimated_hours: 1.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T004"
+    description: "Study glow source code (styling, layout)"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T005"
+    description: "Prototype SafeDownload TUI layout"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T006"
+    description: "Research testing strategies (golden files, etc.)"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T007"
+    description: "Document component library architecture"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+# =============================================================================
+# FINDINGS
+# =============================================================================
+
+findings:
+  discoveries: []
+
+  comparisons: []
+
+  code_examples: []
+
+  benchmarks: []
+
+# =============================================================================
+# DECISIONS
+# =============================================================================
+
+decisions: []
+
+# =============================================================================
+# RISKS
+# =============================================================================
+
+risks:
+  - id: "RISK001"
+    title: "Performance issues with large download queues"
+    probability: "medium"
+    impact: "high"
+    mitigation: "Implement virtual scrolling, benchmark early"
+    status: "identified"
+
+  - id: "RISK002"
+    title: "Accessibility regressions from TUI complexity"
+    probability: "medium"
+    impact: "high"
+    mitigation: "Follow accessibility checklist, test with screen readers"
+    status: "identified"
+
+  - id: "RISK003"
+    title: "Learning curve delays implementation"
+    probability: "medium"
+    impact: "medium"
+    mitigation: "Allocate extra time, study existing projects"
+    status: "identified"
+
+# =============================================================================
+# NEXT STEPS
+# =============================================================================
+
+next_steps:
+  immediate:
+    - action: "Start with Bubble Tea tutorials"
+      owner: null
+      due_date: null
+      status: "not_started"
+
+  follow_up:
+    - action: "Update F014 spec with patterns discovered"
+      owner: null
+      due_date: null
+      status: "not_started"
+
+    - action: "Update architecture/tui-stack.md"
+      owner: null
+      due_date: null
+      status: "not_started"
+
+# =============================================================================
+# INTEGRATION
+# =============================================================================
+
+integration:
+  feature_specs:
+    - feature_id: "F014"
+      feature_name: "Bubble Tea TUI Framework"
+      updates_required:
+        - section: "implementation.packages"
+          change: "Document component patterns discovered"
+          status: "pending"
+
+  architecture_docs:
+    - doc: "tui-stack.md"
+      updates_required:
+        - section: "Key Components"
+          change: "Expand with implementation details"
+          status: "pending"
+
+# =============================================================================
+# LOG
+# =============================================================================
+
+log:
+  entries: []
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+
+summary:
+  executive_summary: null
+  recommendations: []
+  open_questions: []
+  overall_confidence: null
+  completion_date: null
+  reviewed_by: null
+  review_date: null

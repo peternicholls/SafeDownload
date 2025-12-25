@@ -1,0 +1,432 @@
+# R01: Go HTTP Client Libraries Research
+# Supporting Feature: F011 (Go Core Library)
+# Target Version: v1.0.0 Phoenix
+
+metadata:
+  id: "R01"
+  name: "Go HTTP Client Libraries"
+  folder: "01-go-http-client"
+  target_version: "1.0.0"
+  priority: "P0"
+  status: "not_started"
+  estimated_hours: 3
+  actual_hours: 0
+  assigned_to: null
+  blocks_features:
+    - "F011"
+  depends_on: []
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  started: null
+  completed: null
+
+# =============================================================================
+# RESEARCH OBJECTIVES
+# =============================================================================
+
+objectives:
+  primary:
+    - goal: "Evaluate HTTP client libraries for resumable downloads"
+      description: |
+        Compare stdlib net/http with third-party libraries (grab, resty, etc.)
+        for implementing resumable downloads with HTTP Range headers.
+      success_criteria: "Decision made on library choice with documented rationale"
+      status: "not_started"
+
+    - goal: "Understand Range header implementation patterns in Go"
+      description: |
+        Research how to properly implement HTTP Range requests for download
+        resumption, including handling server support detection and partial content.
+      success_criteria: "Working code example for resumable downloads"
+      status: "not_started"
+
+    - goal: "Design connection pooling strategy for concurrent downloads"
+      description: |
+        Determine optimal http.Transport configuration for multiple
+        simultaneous downloads with proper resource management.
+      success_criteria: "Documented pooling strategy with benchmarks"
+      status: "not_started"
+
+  secondary:
+    - goal: "Evaluate proxy support implementations"
+      description: "Research HTTP_PROXY/HTTPS_PROXY handling in Go HTTP clients"
+      success_criteria: "Proxy support implementation guide"
+      status: "not_started"
+
+    - goal: "Research context cancellation patterns"
+      description: "Best practices for graceful download cancellation with context.Context"
+      success_criteria: "Cancellation pattern documentation"
+      status: "not_started"
+
+# =============================================================================
+# KEY QUESTIONS
+# =============================================================================
+
+key_questions:
+  critical:
+    - question: "Should we use grab library or build from stdlib net/http?"
+      context: |
+        Constitution Principle II prefers minimal dependencies.
+        However, grab provides battle-tested resumable download functionality.
+        Trade-off: simplicity vs maintenance burden.
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How do we handle servers that don't support Range requests?"
+      context: |
+        Not all servers support HTTP Range headers. We need graceful degradation
+        to full downloads when partial content is not available.
+      answer: null
+      confidence: null
+      sources: []
+
+  important:
+    - question: "What's the performance overhead of external HTTP libraries?"
+      context: "Need to ensure any library choice doesn't violate performance gates"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to handle TLS certificate verification in Go?"
+      context: "Constitution requires TLS verification via system CA trust store"
+      answer: null
+      confidence: null
+      sources: []
+
+  exploratory:
+    - question: "Can we use HTTP/2 for parallel chunk downloads?"
+      context: "Some download accelerators use HTTP/2 multiplexing"
+      answer: null
+      confidence: null
+      sources: []
+
+# =============================================================================
+# SOURCES TO INVESTIGATE
+# =============================================================================
+
+sources:
+  libraries:
+    - name: "grab"
+      url: "https://github.com/cavaliercoder/grab"
+      stars: 1300
+      license: "BSD-3-Clause"
+      last_commit: null
+      relevance: |
+        Purpose-built HTTP download manager with:
+        - Resumable downloads
+        - Progress callbacks
+        - Concurrent downloads
+        - Checksum verification
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+    - name: "resty"
+      url: "https://github.com/go-resty/resty"
+      stars: 9000
+      license: "MIT"
+      last_commit: null
+      relevance: |
+        General-purpose HTTP client with retry support.
+        May be overkill for our needs (focused on REST APIs).
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+    - name: "go-retryablehttp"
+      url: "https://github.com/hashicorp/go-retryablehttp"
+      stars: 1800
+      license: "MPL-2.0"
+      last_commit: null
+      relevance: |
+        HashiCorp's retryable HTTP client.
+        Proven in production (Terraform, Vault).
+        Focus on reliability over features.
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+    - name: "stdlib net/http"
+      url: "https://pkg.go.dev/net/http"
+      stars: null
+      license: "BSD-3-Clause"
+      last_commit: null
+      relevance: |
+        Go standard library. No external dependencies.
+        Full control over implementation.
+        Requires more code to implement features.
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+  documentation:
+    - name: "Go net/http Package Documentation"
+      url: "https://pkg.go.dev/net/http"
+      type: "official"
+      relevance: "Primary reference for stdlib approach"
+      read_status: "not_read"
+      notes: null
+
+    - name: "HTTP Range Requests (MDN)"
+      url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests"
+      type: "official"
+      relevance: "Understanding HTTP Range specification"
+      read_status: "not_read"
+      notes: null
+
+    - name: "grab Documentation"
+      url: "https://github.com/cavaliercoder/grab#readme"
+      type: "official"
+      relevance: "Understanding grab API and features"
+      read_status: "not_read"
+      notes: null
+
+  projects:
+    - name: "aria2"
+      url: "https://github.com/aria2/aria2"
+      stars: 33000
+      relevance: "Reference implementation for download managers"
+      study_status: "not_studied"
+      key_files:
+        - "src/HttpRequest.cc"
+        - "src/HttpDownloadCommand.cc"
+      notes: null
+
+    - name: "wget (Go port)"
+      url: "https://github.com/sanbornm/go-selfupdate"
+      stars: null
+      relevance: "Simple download implementation patterns"
+      study_status: "not_studied"
+      key_files: []
+      notes: null
+
+# =============================================================================
+# CONSTITUTION ALIGNMENT
+# =============================================================================
+
+constitution_alignment:
+  principles:
+    - id: "II"
+      name: "Optional Enhanced Features"
+      relevance: "Core dependencies should be minimal; prefer stdlib"
+      compliance_notes: null
+
+    - id: "III"
+      name: "Resumable Downloads"
+      relevance: "Non-negotiable; whatever we choose must support resumption"
+      compliance_notes: null
+
+    - id: "VIII"
+      name: "Polyglot Architecture"
+      relevance: "Go core is mandated; HTTP client must be Go"
+      compliance_notes: null
+
+  gates:
+    - gate: "Performance"
+      requirement: "Download throughput >= v0.2.x (no regression)"
+      research_relevance: "Library choice affects throughput"
+      findings: null
+
+    - gate: "Reliability"
+      requirement: "Resume calculation <50ms"
+      research_relevance: "Range header handling efficiency"
+      findings: null
+
+  conflicts:
+    - principle: "II"
+      concern: "Using grab adds a dependency vs constitution preference for minimal deps"
+      resolution: null
+
+# =============================================================================
+# TASKS
+# =============================================================================
+
+tasks:
+  - id: "T001"
+    description: "Read grab library source code and documentation"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T002"
+    description: "Implement minimal resumable download with stdlib net/http"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T003"
+    description: "Implement same download with grab library"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T004"
+    description: "Benchmark both implementations"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T005"
+    description: "Document connection pooling best practices"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+  - id: "T006"
+    description: "Make decision and document rationale"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+    blocker: null
+    notes: null
+    completed_date: null
+
+# =============================================================================
+# FINDINGS
+# =============================================================================
+
+findings:
+  discoveries: []
+
+  comparisons:
+    - category: "HTTP Client Libraries"
+      options:
+        - name: "stdlib net/http"
+          pros:
+            - "No external dependencies"
+            - "Full control over implementation"
+            - "Constitution compliant"
+          cons:
+            - "More code to write"
+            - "Must implement resume logic ourselves"
+          score: null
+
+        - name: "grab"
+          pros:
+            - "Purpose-built for downloads"
+            - "Battle-tested"
+            - "Progress callbacks built-in"
+          cons:
+            - "External dependency"
+            - "May be over-engineered for needs"
+          score: null
+
+        - name: "resty"
+          pros:
+            - "Popular, well-maintained"
+            - "Good retry support"
+          cons:
+            - "Designed for REST APIs, not file downloads"
+            - "External dependency"
+          score: null
+
+  code_examples: []
+
+  benchmarks: []
+
+# =============================================================================
+# DECISIONS
+# =============================================================================
+
+decisions: []
+
+# =============================================================================
+# RISKS
+# =============================================================================
+
+risks:
+  - id: "RISK001"
+    title: "External library becomes unmaintained"
+    probability: "low"
+    impact: "medium"
+    mitigation: "Can fork and maintain; stdlib fallback possible"
+    status: "identified"
+
+  - id: "RISK002"
+    title: "Performance regression with chosen approach"
+    probability: "low"
+    impact: "high"
+    mitigation: "Benchmark before committing; keep alternatives"
+    status: "identified"
+
+# =============================================================================
+# NEXT STEPS
+# =============================================================================
+
+next_steps:
+  immediate:
+    - action: "Begin library evaluation"
+      owner: null
+      due_date: null
+      status: "not_started"
+
+  follow_up:
+    - action: "Update F011 spec with library choice"
+      owner: null
+      due_date: null
+      status: "not_started"
+
+    - action: "Update architecture/core-migration.md"
+      owner: null
+      due_date: null
+      status: "not_started"
+
+# =============================================================================
+# INTEGRATION
+# =============================================================================
+
+integration:
+  feature_specs:
+    - feature_id: "F011"
+      feature_name: "Go Core Library"
+      updates_required:
+        - section: "implementation.packages"
+          change: "Document chosen HTTP client approach in pkg/downloader"
+          status: "pending"
+
+        - section: "dependencies.external"
+          change: "Add or confirm no external HTTP library"
+          status: "pending"
+
+  architecture_docs:
+    - doc: "core-migration.md"
+      updates_required:
+        - section: "Core Components / Downloader"
+          change: "Specify implementation approach"
+          status: "pending"
+
+# =============================================================================
+# LOG
+# =============================================================================
+
+log:
+  entries: []
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+
+summary:
+  executive_summary: null
+  recommendations: []
+  open_questions: []
+  overall_confidence: null
+  completion_date: null
+  reviewed_by: null
+  review_date: null

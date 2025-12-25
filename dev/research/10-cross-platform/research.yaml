@@ -1,0 +1,148 @@
+# R10: Cross-Platform Binary Distribution Research
+# Supporting Feature: F013 (Cross-Platform Build)
+# Target Version: v1.0.0 Phoenix
+
+metadata:
+  id: "R10"
+  name: "Cross-Platform Distribution"
+  folder: "10-cross-platform"
+  target_version: "1.0.0"
+  priority: "P1"
+  status: "not_started"
+  estimated_hours: 3
+  actual_hours: 0
+  assigned_to: null
+  blocks_features:
+    - "F013"
+  depends_on: []
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  started: null
+  completed: null
+
+objectives:
+  primary:
+    - goal: "Understand CGO implications for cross-compilation"
+      description: "When CGO is needed and how to avoid it"
+      success_criteria: "CGO decision guide"
+      status: "not_started"
+
+    - goal: "Learn static linking for Linux"
+      description: "Creating truly portable Linux binaries"
+      success_criteria: "Static linking guide with musl"
+      status: "not_started"
+
+    - goal: "Research macOS code signing requirements"
+      description: "Gatekeeper, notarization for distribution"
+      success_criteria: "macOS signing process document"
+      status: "not_started"
+
+    - goal: "Optimize binary size"
+      description: "Reduce Go binary size for distribution"
+      success_criteria: "Binary optimization checklist"
+      status: "not_started"
+
+key_questions:
+  critical:
+    - question: "Should we avoid CGO entirely for simpler cross-compilation?"
+      context: "CGO complicates cross-compiling"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "macOS notarization required for distribution outside App Store?"
+      context: "Gatekeeper may block unsigned binaries"
+      answer: null
+      confidence: null
+      sources: []
+
+  important:
+    - question: "What's acceptable binary size?"
+      context: "Go binaries typically 10-20MB"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to create truly static Linux binaries?"
+      context: "Avoid glibc dependencies for portability"
+      answer: null
+      confidence: null
+      sources: []
+
+sources:
+  documentation:
+    - name: "Go Cross-Compilation"
+      url: "https://pkg.go.dev/cmd/go#hdr-Build_constraints"
+      type: "official"
+      relevance: "Understanding GOOS/GOARCH"
+      read_status: "not_read"
+      notes: null
+
+    - name: "Apple Notarization"
+      url: "https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution"
+      type: "official"
+      relevance: "macOS distribution requirements"
+      read_status: "not_read"
+      notes: null
+
+constitution_alignment:
+  gates:
+    - gate: "Platform Support"
+      requirement: "Tier 1: macOS, Ubuntu, Debian"
+      research_relevance: "Must work on all Tier 1 platforms"
+      findings: null
+
+tasks:
+  - id: "T001"
+    description: "Research CGO implications"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T002"
+    description: "Research static linking with musl"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T003"
+    description: "Research macOS code signing and notarization"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T004"
+    description: "Research binary size optimization"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T005"
+    description: "Design CI/CD build matrix"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+findings:
+  discoveries: []
+  comparisons: []
+
+decisions: []
+
+integration:
+  feature_specs:
+    - feature_id: "F013"
+      feature_name: "Cross-Platform Build"
+      updates_required:
+        - section: "implementation"
+          change: "Document build approach"
+          status: "pending"
+
+log:
+  entries: []
+
+summary:
+  executive_summary: null
+  recommendations: []
+  open_questions: []
+  overall_confidence: null

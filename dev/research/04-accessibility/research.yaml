@@ -1,0 +1,191 @@
+# R04: Accessible Terminal UI Patterns Research
+# Supporting Features: F008 (Accessibility), F014 (Bubble Tea TUI)
+# Target Version: v0.2.0 Shield, v1.1.0 Bubble
+
+metadata:
+  id: "R04"
+  name: "Accessible Terminal UI Patterns"
+  folder: "04-accessibility"
+  target_version: "0.2.0"
+  priority: "P1"
+  status: "not_started"
+  estimated_hours: 4
+  actual_hours: 0
+  assigned_to: null
+  blocks_features:
+    - "F008"
+    - "F014"
+  depends_on: []
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  started: null
+  completed: null
+
+objectives:
+  primary:
+    - goal: "Understand screen reader compatibility for terminal apps"
+      description: |
+        Research how VoiceOver, NVDA, and Orca interact with terminal applications.
+        Determine what makes terminal output accessible.
+      success_criteria: "Screen reader compatibility guidelines document"
+      status: "not_started"
+
+    - goal: "Define WCAG 2.1 AA compliant color palettes for terminal"
+      description: |
+        Research minimum contrast ratios and create color palettes
+        for light, dark, and high-contrast themes.
+      success_criteria: "Three validated color palettes meeting WCAG AA"
+      status: "not_started"
+
+    - goal: "Validate emoji + text pattern for status indicators"
+      description: |
+        Constitution requires status indicators combine emoji + text labels.
+        Validate this approach works for accessibility.
+      success_criteria: "Confirmed pattern or alternative recommendation"
+      status: "not_started"
+
+    - goal: "Research keyboard-only navigation standards"
+      description: |
+        Determine best practices for keyboard navigation in TUI apps.
+        Compare vim-style vs standard arrow key navigation.
+      success_criteria: "Keyboard navigation specification"
+      status: "not_started"
+
+  secondary:
+    - goal: "Design --plain flag specification"
+      description: "Output mode for scripts AND accessibility needs"
+      success_criteria: "--plain flag specification"
+      status: "not_started"
+
+key_questions:
+  critical:
+    - question: "How do screen readers handle terminal applications?"
+      context: "Need to ensure SafeDownload is usable with assistive technology"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "What ANSI escape sequences work best for screen readers?"
+      context: "Some escape sequences may interfere with screen readers"
+      answer: null
+      confidence: null
+      sources: []
+
+  important:
+    - question: "What are colorblind-safe color combinations for terminal?"
+      context: "Avoid red/green only status; need alternatives"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to test accessibility without specialized hardware?"
+      context: "Need practical testing approach for developers"
+      answer: null
+      confidence: null
+      sources: []
+
+sources:
+  documentation:
+    - name: "WCAG 2.1 Quick Reference"
+      url: "https://www.w3.org/WAI/WCAG21/quickref/"
+      type: "official"
+      relevance: "Accessibility standards reference"
+      read_status: "not_read"
+      notes: null
+
+    - name: "Inclusive Components"
+      url: "https://inclusive-components.design/"
+      type: "reference"
+      relevance: "General accessibility patterns"
+      read_status: "not_read"
+      notes: null
+
+  libraries:
+    - name: "termenv"
+      url: "https://github.com/muesli/termenv"
+      stars: 1600
+      license: "MIT"
+      relevance: "Terminal capability detection including color support"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+constitution_alignment:
+  principles:
+    - id: "XI"
+      name: "Accessibility"
+      relevance: "Core focus of this research"
+      compliance_notes: null
+
+  gates:
+    - gate: "Accessibility"
+      requirement: "High-contrast mode support"
+      research_relevance: "Define high-contrast palette"
+      findings: null
+
+    - gate: "Accessibility"
+      requirement: "Status indicators combine emoji + text labels"
+      research_relevance: "Validate this approach"
+      findings: null
+
+tasks:
+  - id: "T001"
+    description: "Research screen reader + terminal interaction"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T002"
+    description: "Define WCAG AA color palettes (light, dark, high-contrast)"
+    estimated_hours: 1
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T003"
+    description: "Research colorblind-safe terminal colors"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T004"
+    description: "Validate emoji + text pattern"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T005"
+    description: "Define keyboard navigation specification"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T006"
+    description: "Update dev/checklists/accessibility.md"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+findings:
+  discoveries: []
+  comparisons: []
+
+decisions: []
+risks: []
+
+integration:
+  feature_specs:
+    - feature_id: "F008"
+      feature_name: "Accessibility"
+      updates_required:
+        - section: "non_functional_requirements.accessibility"
+          change: "Add specific color values and patterns"
+          status: "pending"
+
+log:
+  entries: []
+
+summary:
+  executive_summary: null
+  recommendations: []
+  open_questions: []
+  overall_confidence: null

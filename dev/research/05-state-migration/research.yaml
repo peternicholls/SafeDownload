@@ -1,0 +1,194 @@
+# R05: State Migration Strategies Research
+# Supporting Features: F010 (Schema Versioning), F011 (Go Core)
+# Target Version: v1.0.0 Phoenix
+
+metadata:
+  id: "R05"
+  name: "State Migration Strategies"
+  folder: "05-state-migration"
+  target_version: "1.0.0"
+  priority: "P1"
+  status: "not_started"
+  estimated_hours: 3
+  actual_hours: 0
+  assigned_to: null
+  blocks_features:
+    - "F010"
+    - "F011"
+  depends_on: []
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  started: null
+  completed: null
+
+objectives:
+  primary:
+    - goal: "Define JSON schema evolution patterns"
+      description: "Research backward/forward compatibility patterns for state.json"
+      success_criteria: "Schema evolution guidelines document"
+      status: "not_started"
+
+    - goal: "Implement atomic file operations in Go"
+      description: "Safe write patterns (write temp file, then rename)"
+      success_criteria: "Working atomic write implementation"
+      status: "not_started"
+
+    - goal: "Research cross-platform file locking"
+      description: "How flock() behaves across macOS/Linux/BSD"
+      success_criteria: "File locking implementation guide"
+      status: "not_started"
+
+    - goal: "Design migration testing strategy"
+      description: "How to test upgrades from v0.x to v1.0.0"
+      success_criteria: "Migration test framework"
+      status: "not_started"
+
+  secondary:
+    - goal: "Evaluate JSON Schema validation libraries"
+      description: "Determine if formal schema validation is worthwhile"
+      success_criteria: "Decision on schema validation approach"
+      status: "not_started"
+
+key_questions:
+  critical:
+    - question: "Should we use a formal schema validation library?"
+      context: "Trade-off between validation rigor and complexity/dependencies"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to handle corrupted state files gracefully?"
+      context: "Need recovery strategy when JSON is malformed"
+      answer: null
+      confidence: null
+      sources: []
+
+  important:
+    - question: "What's the strategy for v0.x Python-generated JSON vs Go-generated JSON?"
+      context: "Python and Go may serialize JSON slightly differently"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How does flock() behave across macOS/Linux/BSD?"
+      context: "Need consistent behavior on Tier 1 platforms"
+      answer: null
+      confidence: null
+      sources: []
+
+sources:
+  documentation:
+    - name: "JSON Schema"
+      url: "https://json-schema.org/"
+      type: "official"
+      relevance: "Understanding schema validation options"
+      read_status: "not_read"
+      notes: null
+
+    - name: "Go os package (file operations)"
+      url: "https://pkg.go.dev/os"
+      type: "official"
+      relevance: "Atomic writes, file locking"
+      read_status: "not_read"
+      notes: null
+
+  libraries:
+    - name: "xeipuuv/gojsonschema"
+      url: "https://github.com/xeipuuv/gojsonschema"
+      stars: 2400
+      license: "Apache-2.0"
+      relevance: "JSON Schema validation in Go"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+    - name: "gofrs/flock"
+      url: "https://github.com/gofrs/flock"
+      stars: 600
+      license: "BSD-3-Clause"
+      relevance: "Cross-platform file locking"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+constitution_alignment:
+  principles:
+    - id: "VII"
+      name: "State Persistence & Auto-Resume"
+      relevance: "State must survive migrations without data loss"
+      compliance_notes: null
+
+  gates:
+    - gate: "State Compatibility"
+      requirement: "v0.2.x state files load successfully in v1.0.0"
+      research_relevance: "Migration strategy must handle this"
+      findings: null
+
+tasks:
+  - id: "T001"
+    description: "Research JSON schema evolution patterns"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T002"
+    description: "Implement atomic write in Go (temp + rename)"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T003"
+    description: "Research cross-platform file locking"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T004"
+    description: "Evaluate JSON Schema validation libraries"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T005"
+    description: "Design migration testing approach"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T006"
+    description: "Document state corruption recovery strategy"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+findings:
+  discoveries: []
+  comparisons: []
+
+decisions: []
+risks: []
+
+integration:
+  feature_specs:
+    - feature_id: "F010"
+      feature_name: "Schema Versioning"
+      updates_required:
+        - section: "implementation"
+          change: "Document migration patterns"
+          status: "pending"
+
+    - feature_id: "F011"
+      feature_name: "Go Core Library"
+      updates_required:
+        - section: "pkg/state"
+          change: "Document atomic writes and locking"
+          status: "pending"
+
+log:
+  entries: []
+
+summary:
+  executive_summary: null
+  recommendations: []
+  open_questions: []
+  overall_confidence: null

@@ -1,0 +1,469 @@
+# SafeDownload Research Plan
+# Master checklist and timeline for all research activities
+#
+# Created: 2025-12-25
+# Constitution: v1.5.0
+
+metadata:
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  owner: "@peternicholls"
+  constitution_version: "1.5.0"
+  schema_version: "1.0.0"
+
+# =============================================================================
+# RESEARCH AREAS OVERVIEW
+# =============================================================================
+
+research_areas:
+  - id: "R01"
+    name: "Go HTTP Client Libraries"
+    folder: "01-go-http-client"
+    target_version: "1.0.0"
+    priority: "P0"
+    status: "not_started"
+    estimated_hours: 3
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F011" # Go Core Library
+    due_date: null
+    completed_date: null
+
+  - id: "R02"
+    name: "Bubble Tea TUI Framework"
+    folder: "02-bubble-tea-tui"
+    target_version: "1.1.0"
+    priority: "P0"
+    status: "not_started"
+    estimated_hours: 6
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F014" # Bubble Tea TUI
+    due_date: null
+    completed_date: null
+
+  - id: "R03"
+    name: "Rate Limiting Algorithms"
+    folder: "03-rate-limiting"
+    target_version: "1.0.0"
+    priority: "P1"
+    status: "not_started"
+    estimated_hours: 2
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F011" # Go Core Library
+    due_date: null
+    completed_date: null
+
+  - id: "R04"
+    name: "Accessible Terminal UI Patterns"
+    folder: "04-accessibility"
+    target_version: "0.2.0"
+    priority: "P1"
+    status: "not_started"
+    estimated_hours: 4
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F008" # Accessibility
+      - "F014" # Bubble Tea TUI
+    due_date: null
+    completed_date: null
+
+  - id: "R05"
+    name: "State Migration Strategies"
+    folder: "05-state-migration"
+    target_version: "1.0.0"
+    priority: "P1"
+    status: "not_started"
+    estimated_hours: 3
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F010" # Schema Versioning
+      - "F011" # Go Core Library
+    due_date: null
+    completed_date: null
+
+  - id: "R06"
+    name: "GPG Signature Verification"
+    folder: "06-gpg-verification"
+    target_version: "1.2.0"
+    priority: "P2"
+    status: "not_started"
+    estimated_hours: 3
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F017" # GPG Signatures
+    due_date: null
+    completed_date: null
+
+  - id: "R07"
+    name: "Package Manager Publishing"
+    folder: "07-package-managers"
+    target_version: "1.3.0"
+    priority: "P2"
+    status: "not_started"
+    estimated_hours: 5
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F021" # Homebrew Tap
+      - "F022" # Debian Packages
+      - "F023" # RPM Packages
+    due_date: null
+    completed_date: null
+
+  - id: "R08"
+    name: "REST API Design Patterns"
+    folder: "08-rest-api"
+    target_version: "2.0.0"
+    priority: "P3"
+    status: "not_started"
+    estimated_hours: 5
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F025" # REST API Server
+    due_date: null
+    completed_date: null
+
+  - id: "R09"
+    name: "Plugin System Architectures"
+    folder: "09-plugin-system"
+    target_version: "1.2.0"
+    priority: "P3"
+    status: "not_started"
+    estimated_hours: 4
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F020" # Plugin System
+    due_date: null
+    completed_date: null
+
+  - id: "R10"
+    name: "Cross-Platform Distribution"
+    folder: "10-cross-platform"
+    target_version: "1.0.0"
+    priority: "P1"
+    status: "not_started"
+    estimated_hours: 3
+    actual_hours: 0
+    assigned_to: null
+    blocks:
+      - "F013" # Cross-Platform Build
+    due_date: null
+    completed_date: null
+
+# =============================================================================
+# CHECKLIST BY VERSION
+# =============================================================================
+
+checklist_by_version:
+  v0_2_0:
+    name: "Shield"
+    target_date: "Q1 2026"
+    research_required:
+      - research_id: "R04"
+        name: "Accessible Terminal UI Patterns"
+        must_complete_before: "Sprint 1 start"
+        checklist:
+          - item: "Screen reader compatibility research"
+            status: "not_done"
+          - item: "WCAG 2.1 AA color palette for terminal"
+            status: "not_done"
+          - item: "Emoji + text pattern validation"
+            status: "not_done"
+          - item: "Keyboard navigation standards"
+            status: "not_done"
+          - item: "Update accessibility checklist"
+            status: "not_done"
+
+  v1_0_0:
+    name: "Phoenix"
+    target_date: "Q2 2026"
+    research_required:
+      - research_id: "R01"
+        name: "Go HTTP Client Libraries"
+        must_complete_before: "Sprint 3 start"
+        checklist:
+          - item: "Evaluate grab vs stdlib"
+            status: "not_done"
+          - item: "Range header implementation research"
+            status: "not_done"
+          - item: "Connection pooling patterns"
+            status: "not_done"
+          - item: "Context cancellation patterns"
+            status: "not_done"
+          - item: "Decision: library selection"
+            status: "not_done"
+
+      - research_id: "R03"
+        name: "Rate Limiting Algorithms"
+        must_complete_before: "Sprint 3 start"
+        checklist:
+          - item: "Token bucket vs leaky bucket analysis"
+            status: "not_done"
+          - item: "golang.org/x/time/rate evaluation"
+            status: "not_done"
+          - item: "io.Reader wrapper pattern"
+            status: "not_done"
+          - item: "Accuracy testing approach"
+            status: "not_done"
+          - item: "Decision: algorithm selection"
+            status: "not_done"
+
+      - research_id: "R05"
+        name: "State Migration Strategies"
+        must_complete_before: "Sprint 4 start"
+        checklist:
+          - item: "JSON schema evolution patterns"
+            status: "not_done"
+          - item: "Atomic file operations in Go"
+            status: "not_done"
+          - item: "Cross-platform file locking"
+            status: "not_done"
+          - item: "Migration testing strategy"
+            status: "not_done"
+          - item: "Decision: schema validation approach"
+            status: "not_done"
+
+      - research_id: "R10"
+        name: "Cross-Platform Distribution"
+        must_complete_before: "Sprint 5 start"
+        checklist:
+          - item: "CGO implications analysis"
+            status: "not_done"
+          - item: "Static linking for Linux"
+            status: "not_done"
+          - item: "macOS code signing research"
+            status: "not_done"
+          - item: "Binary size optimization"
+            status: "not_done"
+          - item: "CI/CD build matrix design"
+            status: "not_done"
+
+  v1_1_0:
+    name: "Bubble"
+    target_date: "Q3 2026"
+    research_required:
+      - research_id: "R02"
+        name: "Bubble Tea TUI Framework"
+        must_complete_before: "Sprint 6 start"
+        checklist:
+          - item: "Elm Architecture deep dive"
+            status: "not_done"
+          - item: "Study lazygit source code"
+            status: "not_done"
+          - item: "Study glow source code"
+            status: "not_done"
+          - item: "Performance optimization patterns"
+            status: "not_done"
+          - item: "Virtual scrolling implementation"
+            status: "not_done"
+          - item: "Testing strategies (golden files)"
+            status: "not_done"
+          - item: "Theme switching patterns"
+            status: "not_done"
+          - item: "Component composition guide"
+            status: "not_done"
+
+  v1_2_0:
+    name: "Velocity"
+    target_date: "Q4 2026"
+    research_required:
+      - research_id: "R06"
+        name: "GPG Signature Verification"
+        must_complete_before: "Sprint 8 start"
+        checklist:
+          - item: "Pure Go vs system gpg analysis"
+            status: "not_done"
+          - item: "ProtonMail/go-crypto evaluation"
+            status: "not_done"
+          - item: "Key management UX research"
+            status: "not_done"
+          - item: "Decision: library selection"
+            status: "not_done"
+
+      - research_id: "R09"
+        name: "Plugin System Architectures"
+        must_complete_before: "Sprint 8 start"
+        checklist:
+          - item: "Go native plugins analysis"
+            status: "not_done"
+          - item: "HashiCorp go-plugin study"
+            status: "not_done"
+          - item: "Subprocess/exec approach"
+            status: "not_done"
+          - item: "Security sandboxing"
+            status: "not_done"
+          - item: "Decision: architecture selection"
+            status: "not_done"
+
+  v1_3_0:
+    name: "Ecosystem"
+    target_date: "Q1 2027"
+    research_required:
+      - research_id: "R07"
+        name: "Package Manager Publishing"
+        must_complete_before: "Sprint 10 start"
+        checklist:
+          - item: "Homebrew tap creation guide"
+            status: "not_done"
+          - item: "Debian packaging workflow"
+            status: "not_done"
+          - item: "RPM packaging workflow"
+            status: "not_done"
+          - item: "goreleaser integration"
+            status: "not_done"
+          - item: "Package signing strategy"
+            status: "not_done"
+
+  v2_0_0:
+    name: "Horizon"
+    target_date: "Q2-Q3 2027"
+    research_required:
+      - research_id: "R08"
+        name: "REST API Design Patterns"
+        must_complete_before: "Sprint 12 start"
+        checklist:
+          - item: "Go HTTP framework evaluation"
+            status: "not_done"
+          - item: "WebSocket vs SSE analysis"
+            status: "not_done"
+          - item: "JWT authentication patterns"
+            status: "not_done"
+          - item: "API versioning strategy"
+            status: "not_done"
+          - item: "Decision: framework selection"
+            status: "not_done"
+
+# =============================================================================
+# TIMELINE AND MILESTONES
+# =============================================================================
+
+timeline:
+  phases:
+    - phase: 1
+      name: "Foundation Research"
+      description: "Research for v0.2.0 and early v1.0.0 features"
+      start_date: "2025-12-25"
+      end_date: null
+      research_items:
+        - "R04" # Accessibility
+        - "R03" # Rate Limiting (basic)
+      milestones:
+        - name: "Accessibility research complete"
+          research_id: "R04"
+          target_date: null
+          completed: false
+        - name: "Rate limiting approach selected"
+          research_id: "R03"
+          target_date: null
+          completed: false
+
+    - phase: 2
+      name: "Go Core Research"
+      description: "Research for v1.0.0 Go migration"
+      start_date: null
+      end_date: null
+      research_items:
+        - "R01" # Go HTTP Client
+        - "R05" # State Migration
+        - "R10" # Cross-Platform
+      milestones:
+        - name: "HTTP library selected"
+          research_id: "R01"
+          target_date: null
+          completed: false
+        - name: "Migration strategy defined"
+          research_id: "R05"
+          target_date: null
+          completed: false
+        - name: "Build matrix defined"
+          research_id: "R10"
+          target_date: null
+          completed: false
+
+    - phase: 3
+      name: "TUI Research"
+      description: "Research for v1.1.0 Bubble Tea TUI"
+      start_date: null
+      end_date: null
+      research_items:
+        - "R02" # Bubble Tea TUI
+      milestones:
+        - name: "Bubble Tea architecture understood"
+          research_id: "R02"
+          target_date: null
+          completed: false
+        - name: "Component library designed"
+          research_id: "R02"
+          target_date: null
+          completed: false
+
+    - phase: 4
+      name: "Advanced Features Research"
+      description: "Research for v1.2.0+ features"
+      start_date: null
+      end_date: null
+      research_items:
+        - "R06" # GPG Verification
+        - "R09" # Plugin System
+        - "R07" # Package Managers
+      milestones:
+        - name: "GPG library selected"
+          research_id: "R06"
+          target_date: null
+          completed: false
+        - name: "Plugin architecture selected"
+          research_id: "R09"
+          target_date: null
+          completed: false
+        - name: "Distribution strategy defined"
+          research_id: "R07"
+          target_date: null
+          completed: false
+
+    - phase: 5
+      name: "API Research"
+      description: "Research for v2.0.0 API and web features"
+      start_date: null
+      end_date: null
+      research_items:
+        - "R08" # REST API
+      milestones:
+        - name: "API framework selected"
+          research_id: "R08"
+          target_date: null
+          completed: false
+
+# =============================================================================
+# STATISTICS
+# =============================================================================
+
+statistics:
+  total_areas: 10
+  not_started: 10
+  in_progress: 0
+  completed: 0
+  blocked: 0
+  total_estimated_hours: 38
+  total_actual_hours: 0
+  completion_percentage: 0
+
+# =============================================================================
+# NOTES
+# =============================================================================
+
+notes:
+  - "Update status field: not_started | in_progress | completed | blocked"
+  - "Update checklist items: not_done | in_progress | done"
+  - "Link decisions to decision-log.yaml"
+  - "Update statistics after each change"
+  - "Recalculate completion_percentage: (completed / total_areas) * 100"

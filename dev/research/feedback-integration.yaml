@@ -1,0 +1,339 @@
+# Research Feedback Integration Plan
+# How Research Flows Back into Planning
+# Version: 1.0.0
+
+---
+# This document defines how research findings become concrete changes
+# to specifications, plans, and tasks.
+---
+
+metadata:
+  version: "1.0.0"
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+# Integration Points
+# Where research outputs connect to project artifacts
+integration_points:
+
+  - name: "Feature Specifications"
+    path: "dev/specs/features/*.yaml"
+    trigger: "Research produces library selection or architecture decision"
+    update_process:
+      - step: 1
+        action: "Locate relevant feature spec(s)"
+        how: "Check research.yaml 'blocks_features' field"
+      
+      - step: 2
+        action: "Update implementation section"
+        fields_affected:
+          - "implementation.libraries"
+          - "implementation.patterns"
+          - "implementation.constraints"
+      
+      - step: 3
+        action: "Add research reference to spec"
+        example: |
+          references:
+            research:
+              - id: R01
+                decision: D001
+                summary: "Using grab library for HTTP downloads"
+      
+      - step: 4
+        action: "Verify spec still aligns with constitution"
+        check: ".specify/memory/constitution.md principles"
+
+  - name: "Architecture Documents"
+    path: "dev/architecture/*.md"
+    trigger: "Research produces significant architecture insight"
+    update_process:
+      - step: 1
+        action: "Determine which architecture doc to update"
+        options:
+          - "core-migration.md - Go core decisions"
+          - "tui-stack.md - TUI framework decisions"
+          - "state-schema.md - State management decisions"
+      
+      - step: 2
+        action: "Add or update relevant section"
+        guidance: "Include decision ID reference"
+      
+      - step: 3
+        action: "Update diagrams if applicable"
+
+  - name: "Sprint Planning"
+    path: "dev/sprints/*.yaml"
+    trigger: "Research completes for sprint-relevant features"
+    update_process:
+      - step: 1
+        action: "Check sprint feature dependencies"
+        how: "Review sprint's features vs research completion"
+      
+      - step: 2
+        action: "Unblock dependent tasks"
+        how: "Remove 'pending_research' blockers"
+      
+      - step: 3
+        action: "Adjust estimates if research revealed complexity"
+        guidance: "Re-estimate tasks with new information"
+
+  - name: "Roadmap"
+    path: "dev/roadmap.yaml"
+    trigger: "Research reveals need to re-sequence versions"
+    update_process:
+      - step: 1
+        action: "Evaluate impact on version sequencing"
+        questions:
+          - "Does research reveal unexpected dependencies?"
+          - "Should a feature move to a different version?"
+          - "Are effort estimates still valid?"
+      
+      - step: 2
+        action: "Propose roadmap adjustment"
+        via: "Create issue or discussion"
+      
+      - step: 3
+        action: "Update roadmap.yaml if approved"
+
+  - name: "Constitution"
+    path: ".specify/memory/constitution.md"
+    trigger: "Research reveals principle conflict or gap"
+    update_process:
+      - step: 1
+        action: "Document the conflict or gap"
+        where: "research findings"
+      
+      - step: 2
+        action: "Propose constitution amendment"
+        via: "Create dedicated issue"
+        guidance: "Constitution changes require careful consideration"
+      
+      - step: 3
+        action: "If approved, update constitution.md"
+        then: "Bump constitution version"
+
+# Feedback Workflow
+# Standard process for integrating research
+workflow:
+
+  on_research_complete:
+    trigger: "Research area status changes to 'complete'"
+    steps:
+      - id: 1
+        name: "Validate Completion"
+        tasks:
+          - "All key_questions have answers with confidence >= MEDIUM"
+          - "At least one decision recorded in decision-log.yaml"
+          - "Summary section is filled in research.yaml"
+        output: "Research ready for integration"
+
+      - id: 2
+        name: "Generate Integration Checklist"
+        tasks:
+          - "List all feature specs in blocks_features"
+          - "List all architecture docs that might need updates"
+          - "Check if any sprint tasks were blocked on this research"
+        output: "Integration checklist"
+
+      - id: 3
+        name: "Execute Updates"
+        tasks:
+          - "Update each item on checklist"
+          - "Add commit reference to research log"
+        output: "Updated project artifacts"
+
+      - id: 4
+        name: "Cross-Reference"
+        tasks:
+          - "Add 'integrated: true' to research.yaml"
+          - "Add integration date and commit SHA"
+        output: "Traceability established"
+
+  on_decision_approved:
+    trigger: "Decision status changes to 'APPROVED'"
+    steps:
+      - id: 1
+        name: "Update Decision Log"
+        tasks:
+          - "Set approved date"
+          - "Increment decisions_approved counter"
+
+      - id: 2
+        name: "Update Feature Specs"
+        tasks:
+          - "Add decision to affected feature specs"
+
+      - id: 3
+        name: "Unblock Tasks"
+        tasks:
+          - "Find tasks waiting on this decision"
+          - "Remove blockers, update estimates if needed"
+
+      - id: 4
+        name: "Communicate"
+        tasks:
+          - "Add entry to CHANGELOG.md if user-facing"
+          - "Update README.md if it affects installation/usage"
+
+# Integration Checklist Template
+# Use when completing a research area
+integration_checklist_template:
+  research_id: "R00"
+  research_name: "Research Area Name"
+  completion_date: null
+  
+  decisions_made:
+    - decision_id: "D000"
+      title: "Decision Title"
+      integrated: false
+  
+  spec_updates:
+    - feature_id: "F000"
+      file: "dev/specs/features/F000-feature.yaml"
+      sections_updated: []
+      commit_sha: null
+      integrated: false
+  
+  architecture_updates:
+    - file: "dev/architecture/relevant.md"
+      sections_updated: []
+      commit_sha: null
+      integrated: false
+  
+  sprint_unblocks:
+    - sprint_id: "sprint-00"
+      task_ids: []
+      integrated: false
+  
+  documentation_updates:
+    - file: "README.md"
+      change: null
+      integrated: false
+    - file: "CHANGELOG.md"
+      change: null
+      integrated: false
+
+# Research Review Cadence
+# Regular review to ensure research stays on track
+review_cadence:
+  
+  weekly_review:
+    when: "Monday morning (or sprint start)"
+    duration: "15-30 minutes"
+    agenda:
+      - "Check research progress against timeline"
+      - "Identify blockers or pivots needed"
+      - "Update research_plan.yaml statistics"
+    output: "Updated research status"
+
+  pre_version_review:
+    when: "2 weeks before version development starts"
+    duration: "1-2 hours"
+    agenda:
+      - "Verify all blocking research for version is complete"
+      - "Review all decisions made for version"
+      - "Ensure all integration steps are complete"
+      - "Identify any remaining unknowns"
+    output: "Version research readiness report"
+
+  post_version_review:
+    when: "After version release"
+    duration: "30-60 minutes"
+    agenda:
+      - "Validate research decisions were correct"
+      - "Document lessons learned"
+      - "Update research templates if needed"
+    output: "Research retrospective notes"
+
+# Metrics
+# How we measure research effectiveness
+metrics:
+  
+  leading_indicators:
+    - name: "Research completion rate"
+      formula: "completed_areas / total_areas"
+      target: ">= 90% before version development"
+    
+    - name: "Decision confidence"
+      formula: "average confidence across decisions"
+      target: ">= HIGH (3/4)"
+    
+    - name: "Integration lag"
+      formula: "days between research completion and integration"
+      target: "<= 3 days"
+
+  lagging_indicators:
+    - name: "Decision reversal rate"
+      formula: "reversed_decisions / total_decisions"
+      target: "<= 10%"
+      note: "Some reversal is healthy; indicates learning"
+    
+    - name: "Implementation surprise rate"
+      formula: "tasks with estimate blown due to missed research"
+      target: "<= 5%"
+
+# Integration Status Dashboard
+# Current state of research → planning integration
+current_status:
+  last_updated: "2025-12-25"
+  
+  by_research_area:
+    R01:
+      name: "Go HTTP Client"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R02:
+      name: "Bubble Tea TUI"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R03:
+      name: "Rate Limiting"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R04:
+      name: "Accessibility"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R05:
+      name: "State Migration"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R06:
+      name: "GPG Verification"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R07:
+      name: "Package Managers"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R08:
+      name: "REST API"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R09:
+      name: "Plugin System"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+    R10:
+      name: "Cross-Platform"
+      status: "not_started"
+      decisions_pending: 1
+      integration_status: "awaiting_research"
+  
+  summary:
+    total_research_areas: 10
+    areas_complete: 0
+    areas_in_progress: 0
+    decisions_made: 0
+    decisions_integrated: 0
+    blocking_next_version: 3  # R01, R05, R10 for v1.0.0

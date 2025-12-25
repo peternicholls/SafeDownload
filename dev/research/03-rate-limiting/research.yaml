@@ -1,0 +1,188 @@
+# R03: Rate Limiting Algorithms Research
+# Supporting Feature: F011 (Go Core Library)
+# Target Version: v1.0.0 Phoenix
+
+metadata:
+  id: "R03"
+  name: "Rate Limiting Algorithms"
+  folder: "03-rate-limiting"
+  target_version: "1.0.0"
+  priority: "P1"
+  status: "not_started"
+  estimated_hours: 2
+  actual_hours: 0
+  assigned_to: null
+  blocks_features:
+    - "F011"
+  depends_on: []
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  started: null
+  completed: null
+
+objectives:
+  primary:
+    - goal: "Understand token bucket vs leaky bucket algorithms"
+      description: "Research both algorithms to understand trade-offs for bandwidth throttling"
+      success_criteria: "Clear comparison document with recommendation"
+      status: "not_started"
+
+    - goal: "Implement bandwidth-level rate limiting in Go"
+      description: "Rate limiting for bytes/second, not requests/second"
+      success_criteria: "Working io.Reader wrapper with rate limiting"
+      status: "not_started"
+
+    - goal: "Meet constitution accuracy requirement (±5%)"
+      description: "Validate that chosen approach delivers accurate throttling"
+      success_criteria: "Benchmark tests showing ±5% accuracy"
+      status: "not_started"
+
+  secondary:
+    - goal: "Design per-download vs global rate limiting"
+      description: "Determine architecture for limiting individual or total bandwidth"
+      success_criteria: "Design document for rate limiting architecture"
+      status: "not_started"
+
+key_questions:
+  critical:
+    - question: "Does golang.org/x/time/rate support bytes/second limiting?"
+      context: "Most rate limiters focus on requests/second, not bandwidth"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to integrate rate limiting with io.Reader wrapper pattern?"
+      context: "Downloads use io.Copy; need to intercept reads"
+      answer: null
+      confidence: null
+      sources: []
+
+  important:
+    - question: "Should rate limiting be per-download or global?"
+      context: "User may want to limit total bandwidth vs individual downloads"
+      answer: null
+      confidence: null
+      sources: []
+
+    - question: "How to handle burst traffic vs smooth throttling?"
+      context: "Token bucket allows bursts; may or may not be desirable"
+      answer: null
+      confidence: null
+      sources: []
+
+sources:
+  libraries:
+    - name: "golang.org/x/time/rate"
+      url: "https://pkg.go.dev/golang.org/x/time/rate"
+      stars: null
+      license: "BSD-3-Clause"
+      last_commit: null
+      relevance: "Official Go extended library for rate limiting"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+    - name: "juju/ratelimit"
+      url: "https://github.com/juju/ratelimit"
+      stars: 600
+      license: "LGPL-3.0"
+      last_commit: null
+      relevance: "Leaky bucket implementation, specifically for bandwidth"
+      evaluation_status: "not_evaluated"
+      evaluation_notes: null
+      recommendation: null
+
+  documentation:
+    - name: "Token Bucket Algorithm (Wikipedia)"
+      url: "https://en.wikipedia.org/wiki/Token_bucket"
+      type: "reference"
+      relevance: "Understanding the algorithm"
+      read_status: "not_read"
+      notes: null
+
+    - name: "Leaky Bucket Algorithm (Wikipedia)"
+      url: "https://en.wikipedia.org/wiki/Leaky_bucket"
+      type: "reference"
+      relevance: "Alternative algorithm"
+      read_status: "not_read"
+      notes: null
+
+tasks:
+  - id: "T001"
+    description: "Research token bucket vs leaky bucket algorithms"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T002"
+    description: "Evaluate golang.org/x/time/rate for bandwidth limiting"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T003"
+    description: "Implement io.Reader wrapper with rate limiting"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+  - id: "T004"
+    description: "Benchmark accuracy (target: ±5%)"
+    estimated_hours: 0.5
+    actual_hours: 0
+    status: "not_started"
+
+constitution_alignment:
+  gates:
+    - gate: "Performance"
+      requirement: "Rate limiting ±5% accuracy"
+      research_relevance: "Must validate chosen approach meets accuracy"
+      findings: null
+
+findings:
+  discoveries: []
+  comparisons:
+    - category: "Rate Limiting Algorithms"
+      options:
+        - name: "Token Bucket"
+          pros:
+            - "Allows bursts (good for download start)"
+            - "Well-understood algorithm"
+          cons:
+            - "May overshoot briefly"
+          score: null
+        - name: "Leaky Bucket"
+          pros:
+            - "Smooth, consistent rate"
+            - "No bursts"
+          cons:
+            - "Slower start (no burst)"
+          score: null
+
+decisions: []
+risks: []
+
+next_steps:
+  immediate:
+    - action: "Research token bucket algorithm"
+      owner: null
+      due_date: null
+      status: "not_started"
+
+integration:
+  feature_specs:
+    - feature_id: "F011"
+      feature_name: "Go Core Library"
+      updates_required:
+        - section: "implementation.packages"
+          change: "Document rate limiting in pkg/ratelimit"
+          status: "pending"
+
+log:
+  entries: []
+
+summary:
+  executive_summary: null
+  recommendations: []
+  open_questions: []
+  overall_confidence: null

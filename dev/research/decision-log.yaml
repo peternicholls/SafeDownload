@@ -1,0 +1,246 @@
+# Research Decision Log
+# SafeDownload Research → Decision Framework
+# Version: 1.0.0
+
+---
+# How to Use This Document
+#
+# When a research area produces a decision:
+# 1. Add a new entry to the `decisions` array below
+# 2. Fill in all required fields
+# 3. Update research_plan.yaml statistics
+# 4. Update the relevant feature spec
+# 5. Add to CHANGELOG.md if significant
+#
+# Decision Lifecycle:
+#   PROPOSED → UNDER_REVIEW → APPROVED → IMPLEMENTED
+#              ↓
+#           REJECTED
+---
+metadata:
+  version: "1.0.0"
+  created: "2025-12-25"
+  updated: "2025-12-25"
+  total_decisions: 0
+  decisions_pending: 0
+  decisions_approved: 0
+  decisions_implemented: 0
+
+# Decision Criteria Weights
+# Used when scoring options in research comparisons
+criteria_weights:
+  constitution_alignment: 25 # Does it align with project principles?
+  performance: 20 # Does it meet performance gates?
+  maintainability: 20 # Easy to maintain long-term?
+  developer_experience: 15 # Good DX for contributors?
+  community_support: 10 # Active community, documentation?
+  dependency_footprint: 10 # Minimal dependencies per constitution?
+
+# Decision Categories
+categories:
+  - name: "LIBRARY_SELECTION"
+    description: "Choice of external library or framework"
+    typical_criteria:
+      - "License compatibility (BSD/MIT/Apache preferred)"
+      - "Active maintenance (commits in last 6 months)"
+      - "Documentation quality"
+      - "Dependency count"
+    required_fields:
+      - "options_evaluated"
+      - "selection_rationale"
+      - "fallback_option"
+
+  - name: "ARCHITECTURE_PATTERN"
+    description: "Structural design decision"
+    typical_criteria:
+      - "Testability"
+      - "Modularity"
+      - "Performance impact"
+      - "Complexity budget"
+    required_fields:
+      - "pattern_name"
+      - "trade_offs_accepted"
+      - "migration_path"
+
+  - name: "IMPLEMENTATION_APPROACH"
+    description: "How to implement a specific feature"
+    typical_criteria:
+      - "Effort estimate"
+      - "Risk assessment"
+      - "Constitution compliance"
+    required_fields:
+      - "approach_description"
+      - "alternatives_rejected"
+
+  - name: "PLATFORM_SUPPORT"
+    description: "Platform/OS specific decisions"
+    typical_criteria:
+      - "Tier 1 platform compatibility"
+      - "Testing feasibility"
+      - "Maintenance burden"
+    required_fields:
+      - "platforms_affected"
+      - "platform_specific_notes"
+
+# Decision Template
+# Copy this when adding a new decision
+decision_template:
+  id: "D000"
+  title: "Decision Title"
+  category: "LIBRARY_SELECTION" # One of categories above
+  research_id: "R00" # Which research area produced this
+  feature_ids: # Which features this affects
+    - "F000"
+  status: "PROPOSED" # PROPOSED | UNDER_REVIEW | APPROVED | REJECTED | IMPLEMENTED
+
+  dates:
+    proposed: null
+    approved: null
+    implemented: null
+
+  context:
+    problem_statement: "What problem does this solve?"
+    constraints: []
+    assumptions: []
+
+  options_considered:
+    - name: "Option A"
+      pros: []
+      cons: []
+      score: null
+    - name: "Option B"
+      pros: []
+      cons: []
+      score: null
+
+  decision:
+    selection: "Option A"
+    rationale: "Why this option was chosen"
+    trade_offs_accepted:
+      - "Trade-off 1 we accept"
+    fallback_plan: "If this doesn't work, we will..."
+
+  implementation:
+    effort_estimate: "S/M/L"
+    blocking_tasks: []
+    non_blocking_tasks: []
+
+  review:
+    reviewers: []
+    concerns_raised: []
+    concerns_addressed: []
+
+  validation:
+    success_criteria: []
+    validation_method: "How we'll know this was right"
+    revisit_trigger: "Conditions that should trigger reconsideration"
+
+# Actual Decisions
+# Add new decisions here as research produces them
+decisions: []
+
+# Decision Backlog
+# Decisions that need to be made but lack sufficient research
+backlog:
+  - id: "DB001"
+    question: "HTTP client library selection (grab vs stdlib)"
+    research_id: "R01"
+    blocking_version: "1.0.0"
+    urgency: "HIGH"
+    notes: "Foundational decision for Go core"
+
+  - id: "DB002"
+    question: "Bubble Tea component library vs custom components"
+    research_id: "R02"
+    blocking_version: "1.1.0"
+    urgency: "HIGH"
+    notes: "Affects TUI development velocity"
+
+  - id: "DB003"
+    question: "Rate limiting algorithm selection"
+    research_id: "R03"
+    blocking_version: "1.2.0"
+    urgency: "MEDIUM"
+    notes: null
+
+  - id: "DB004"
+    question: "Screen reader testing approach"
+    research_id: "R04"
+    blocking_version: "1.1.0"
+    urgency: "HIGH"
+    notes: "Constitution requires accessibility"
+
+  - id: "DB005"
+    question: "State migration strategy (manual vs automated)"
+    research_id: "R05"
+    blocking_version: "1.0.0"
+    urgency: "HIGH"
+    notes: "Affects data safety guarantees"
+
+  - id: "DB006"
+    question: "GPG verification approach (pure Go vs subprocess)"
+    research_id: "R06"
+    blocking_version: "1.2.0"
+    urgency: "LOW"
+    notes: null
+
+  - id: "DB007"
+    question: "Package repository hosting (self-hosted vs GitHub only)"
+    research_id: "R07"
+    blocking_version: "1.3.0"
+    urgency: "LOW"
+    notes: null
+
+  - id: "DB008"
+    question: "REST API framework selection"
+    research_id: "R08"
+    blocking_version: "2.0.0"
+    urgency: "LOW"
+    notes: "Can defer, v2.0.0 is distant"
+
+  - id: "DB009"
+    question: "Plugin system architecture"
+    research_id: "R09"
+    blocking_version: "1.2.0"
+    urgency: "MEDIUM"
+    notes: null
+
+  - id: "DB010"
+    question: "CGO usage policy"
+    research_id: "R10"
+    blocking_version: "1.0.0"
+    urgency: "HIGH"
+    notes: "Affects entire build system"
+
+# Expedited Decision Process
+# For time-sensitive decisions that can't wait for full research
+expedited_process:
+  criteria_for_expedited:
+    - "Blocking critical path for current sprint"
+    - "Security vulnerability requiring immediate mitigation"
+    - "External dependency EOL or critical bug"
+
+  expedited_steps:
+    - step: 1
+      action: "Document decision need with justification"
+      duration: "1 hour"
+
+    - step: 2
+      action: "Quick evaluation of top 2-3 options only"
+      duration: "2-4 hours"
+
+    - step: 3
+      action: "Make provisional decision with explicit revisit date"
+      duration: "Immediate"
+
+    - step: 4
+      action: "Create backlog item for full research validation"
+      duration: "5 minutes"
+
+  provisional_decision_template:
+    id: "PD000"
+    title: "Provisional: Decision Title"
+    status: "PROVISIONAL"
+    revisit_date: "YYYY-MM-DD"
+    validation_research: "R00" # Research that will validate/revise this
+    notes: "Made expedited because..."
