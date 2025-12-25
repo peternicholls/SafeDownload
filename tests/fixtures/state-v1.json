@@ -1,82 +1,82 @@
 {
-  "schema_version": "1.0.0",
-  "created_at": "2025-12-24T10:00:00Z",
-  "updated_at": "2025-12-24T15:30:00Z",
-  "downloads": [
-    {
-      "id": 1,
-      "url": "https://example.com/file1.zip",
-      "output": "/tmp/file1.zip",
-      "status": "completed",
-      "progress": 10485760,
-      "total": 10485760,
-      "checksum": {
-        "algorithm": "sha256",
-        "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "verified": true
-      },
-      "started_at": "2025-12-24T10:00:00Z",
-      "completed_at": "2025-12-24T10:05:30Z",
-      "speed_avg": 349525
+    "schema_version": "1.0.0",
+    "created_at": "2025-12-24T10:00:00Z",
+    "updated_at": "2025-12-24T15:30:00Z",
+    "downloads": [
+        {
+            "id": 1,
+            "url": "https://example.com/file1.zip",
+            "output": "/tmp/file1.zip",
+            "status": "completed",
+            "progress": 10485760,
+            "total": 10485760,
+            "checksum": {
+                "algorithm": "sha256",
+                "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "verified": true
+            },
+            "started_at": "2025-12-24T10:00:00Z",
+            "completed_at": "2025-12-24T10:05:30Z",
+            "speed_avg": 349525
+        },
+        {
+            "id": 2,
+            "url": "https://example.com/file2.tar.gz",
+            "output": "/tmp/file2.tar.gz",
+            "status": "queued",
+            "progress": 0,
+            "total": 52428800,
+            "checksum": null,
+            "started_at": null,
+            "completed_at": null,
+            "speed_avg": 0
+        },
+        {
+            "id": 3,
+            "url": "https://example.com/large.iso",
+            "output": "/tmp/large.iso",
+            "status": "paused",
+            "progress": 536870912,
+            "total": 4294967296,
+            "checksum": {
+                "algorithm": "sha256",
+                "expected": "abc123def456789abcdef0123456789abcdef0123456789abcdef0123456789ab",
+                "verified": false
+            },
+            "started_at": "2025-12-24T11:00:00Z",
+            "completed_at": null,
+            "speed_avg": 1048576,
+            "resume_offset": 536870912
+        },
+        {
+            "id": 4,
+            "url": "https://example.com/failed.bin",
+            "output": "/tmp/failed.bin",
+            "status": "failed",
+            "progress": 1024,
+            "total": 102400,
+            "checksum": null,
+            "started_at": "2025-12-24T12:00:00Z",
+            "completed_at": null,
+            "error": {
+                "code": 2,
+                "message": "Network timeout after 3 retries"
+            },
+            "retry_count": 3
+        }
+    ],
+    "config": {
+        "parallel": 3,
+        "output_dir": "~/Downloads",
+        "allow_http": false,
+        "verify_tls": true,
+        "theme": "dark",
+        "log_rotation_mb": 10
     },
-    {
-      "id": 2,
-      "url": "https://example.com/file2.tar.gz",
-      "output": "/tmp/file2.tar.gz",
-      "status": "queued",
-      "progress": 0,
-      "total": 52428800,
-      "checksum": null,
-      "started_at": null,
-      "completed_at": null,
-      "speed_avg": 0
-    },
-    {
-      "id": 3,
-      "url": "https://example.com/large.iso",
-      "output": "/tmp/large.iso",
-      "status": "paused",
-      "progress": 536870912,
-      "total": 4294967296,
-      "checksum": {
-        "algorithm": "sha256",
-        "expected": "abc123def456789abcdef0123456789abcdef0123456789abcdef0123456789ab",
-        "verified": false
-      },
-      "started_at": "2025-12-24T11:00:00Z",
-      "completed_at": null,
-      "speed_avg": 1048576,
-      "resume_offset": 536870912
-    },
-    {
-      "id": 4,
-      "url": "https://example.com/failed.bin",
-      "output": "/tmp/failed.bin",
-      "status": "failed",
-      "progress": 1024,
-      "total": 102400,
-      "checksum": null,
-      "started_at": "2025-12-24T12:00:00Z",
-      "completed_at": null,
-      "error": {
-        "code": 2,
-        "message": "Network timeout after 3 retries"
-      },
-      "retry_count": 3
+    "statistics": {
+        "total_downloaded": 547356672,
+        "total_downloads": 10,
+        "successful_downloads": 8,
+        "failed_downloads": 2
     }
-  ],
-  "config": {
-    "parallel": 3,
-    "output_dir": "~/Downloads",
-    "allow_http": false,
-    "verify_tls": true,
-    "theme": "dark",
-    "log_rotation_mb": 10
-  },
-  "statistics": {
-    "total_downloaded": 547356672,
-    "total_downloads": 10,
-    "successful_downloads": 8,
-    "failed_downloads": 2
-  }
 }
