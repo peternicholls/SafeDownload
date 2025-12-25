@@ -1,0 +1,485 @@
+metadata:
+  id: "F010"
+  name: "Schema Versioning"
+  version: "0.2.0"
+  sprint: 2
+  status: "planned"
+  priority: "P2"
+  story_points: 3
+  created: "2025-12-25"
+  updated: "2025-12-25"
+
+description: |
+  Add schema_version field to state.json and config.json with auto-migration
+  framework for future compatibility to meet Constitution configuration and state
+  schema versioning requirements.
+
+  Current v0.1.0 lacks schema versioning, making future upgrades risky. This
+  feature establishes the foundation for seamless schema evolution across versions.
+
+constitution_compliance:
+  principles:
+    - id: "VIII"
+      name: "Polyglot Architecture & Forward Compatibility"
+      notes: "Schema versioning enables future migrations (especially for Go core v1.0.0)"
+
+  gates:
+    - gate: "Forward Compatibility"
+      requirement: "All JSON files include schema_version field"
+      test: "TestSchemaVersion_Present in tests/schema/versioning_test.go"
+
+    - gate: "Migration"
+      requirement: "v0.x to v1.0.0 migration succeeds without data loss"
+      test: "TestMigration_V0ToV1 in tests/schema/migration_test.go"
+
+user_stories:
+  - id: "US010-1"
+    priority: "P1"
+    title: "Schema version in all JSON files"
+    description: |
+      As a future maintainer,
+      I want all state and config files to declare their schema version,
+      So that future upgrades can detect and migrate old schemas.
+
+    acceptance_criteria:
+      - "GIVEN new state.json created, WHEN saved, THEN schema_version field is '1.0.0'"
+      - "GIVEN new config.json created, WHEN saved, THEN schema_version field is '1.0.0'"
+      - "GIVEN old state.json without schema_version, WHEN loaded, THEN treated as v0.x and migrated"
+      - "GIVEN unknown schema_version, WHEN loaded, THEN error with clear message"
+
+    independent_test: |
+      1. Run: safedownload (initial setup)
+      2. Check: cat ~/.safedownload/state.json | jq .schema_version
+      3. Verify: Output is "1.0.0"
+      4. Check: cat ~/.safedownload/config.json | jq .schema_version
+      5. Verify: Output is "1.0.0"
+
+    definition_of_done:
+      - "schema_version field added to state.json (value: '1.0.0')"
+      - "schema_version field added to config.json (value: '1.0.0')"
+      - "Old files without schema_version auto-migrate"
+      - "Unit tests verify version field presence"
+      - "Documentation updated in state-schema.md"
+
+  - id: "US010-2"
+    priority: "P1"
+    title: "Auto-migration framework"
+    description: |
+      As a user upgrading SafeDownload,
+      I want old state files automatically migrated,
+      So that I don't lose my download queue.
+
+    acceptance_criteria:
+      - "GIVEN state.json without schema_version, WHEN app starts, THEN backup created (state.json.v0.bak)"
+      - "GIVEN state.json without schema_version, WHEN migrated, THEN new file has schema_version '1.0.0'"
+      - "GIVEN migration succeeds, WHEN verified, THEN all downloads preserved"
+      - "GIVEN migration fails, WHEN error, THEN original file intact, clear error message"
+
+    independent_test: |
+      1. Create old state.json (v0.x format without schema_version)
+      2. Run: safedownload
+      3. Verify: state.json.v0.bak exists (backup of old file)
+      4. Verify: state.json has schema_version "1.0.0"
+      5. Verify: Downloads from old file preserved in new format
+
+    definition_of_done:
+      - "Migration function implemented (migrateV0ToV1)"
+      - "Backup created before migration (.v0.bak suffix)"
+      - "All download data preserved during migration"
+      - "Error handling for failed migrations"
+      - "Unit tests for migration logic"
+      - "Integration test with actual v0.x state file"
+
+  - id: "US010-3"
+    priority: "P2"
+    title: "Forward compatibility detection"
+    description: |
+      As a user who accidentally downgrades,
+      I want a clear error if state file is too new,
+      So that I don't corrupt my data.
+
+    acceptance_criteria:
+      - "GIVEN state.json with schema_version '2.0.0', WHEN v1.0 app loads, THEN error message"
+      - "GIVEN error message, WHEN displayed, THEN suggests upgrading SafeDownload"
+      - "GIVEN newer schema, WHEN detected, THEN no attempt to modify file (read-only)"
+
+    independent_test: |
+      1. Manually edit state.json: set schema_version to "99.0.0"
+      2. Run: safedownload
+      3. Verify: Error message like "state file schema v99.0.0 is newer than app supports (v1.0.0). Upgrade SafeDownload."
+      4. Verify: state.json unchanged (not corrupted by read attempt)
+
+    definition_of_done:
+      - "Version comparison logic (semantic version parsing)"
+      - "Error on newer schema with upgrade suggestion"
+      - "Read-only mode for forward compatibility check"
+      - "Unit tests for version comparison"
+
+functional_requirements:
+  - id: "FR010-1"
+    description: "System MUST add schema_version field to state.json (value: '1.0.0')"
+    priority: "MUST"
+    test: "Create new state, verify schema_version present"
+
+  - id: "FR010-2"
+    description: "System MUST add schema_version field to config.json (value: '1.0.0')"
+    priority: "MUST"
+    test: "Create new config, verify schema_version present"
+
+  - id: "FR010-3"
+    description: "System MUST auto-migrate v0.x state files to v1.0.0"
+    priority: "MUST"
+    test: "Load old state, verify migration to v1.0.0"
+
+  - id: "FR010-4"
+    description: "System MUST create backup before migration (*.v0.bak)"
+    priority: "MUST"
+    test: "Migrate old state, verify backup file exists"
+
+  - id: "FR010-5"
+    description: "System MUST preserve all download data during migration"
+    priority: "MUST"
+    test: "Compare downloads before/after migration"
+
+  - id: "FR010-6"
+    description: "System MUST error on newer schema versions with upgrade message"
+    priority: "MUST"
+    test: "Load future schema, verify error and no corruption"
+
+  - id: "FR010-7"
+    description: "System SHOULD log migration events"
+    priority: "SHOULD"
+    test: "Check safedownload.log for migration messages"
+
+non_functional_requirements:
+  performance:
+    - "Migration MUST complete in <1 second for files <10MB"
+    - "Version comparison MUST complete in <1ms"
+
+  reliability:
+    - "Migration MUST be idempotent (safe to run multiple times)"
+    - "Backup MUST be created atomically before migration"
+    - "Failed migration MUST NOT delete original file"
+
+  usability:
+    - "Migration MUST be transparent (no user action required)"
+    - "Error messages MUST be clear and actionable"
+    - "Backup files MUST be clearly named (.v0.bak suffix)"
+
+  platform_support:
+    - "Tier 1: macOS, Ubuntu LTS, Debian 12+ (JSON parsing via jq or Python)"
+
+implementation:
+  packages:
+    - name: "pkg/state"
+      purpose: "Add schema versioning and migration"
+      new_files:
+        - "pkg/state/schema.go (schema version constants)"
+        - "pkg/state/migration.go (migration logic)"
+        - "pkg/state/migration_test.go"
+      modified_files:
+        - "pkg/state/state.go (add SchemaVersion field)"
+        - "pkg/state/state.go (call migration on load)"
+
+    - name: "pkg/config"
+      purpose: "Add schema versioning to config"
+      new_files:
+        - "pkg/config/schema.go (schema version constants)"
+      modified_files:
+        - "pkg/config/config.go (add SchemaVersion field)"
+
+  bash_changes:
+    - file: "safedownload"
+      changes:
+        - "Add schema_version to generated JSON files"
+        - "Check for schema_version on load"
+        - "Simple migration: add field if missing (v0.x → v1.0.0)"
+        - "Backup creation: cp state.json state.json.v0.bak"
+
+  cli:
+    new_flags:
+      - flag: "--migrate"
+        type: "boolean"
+        default: "false"
+        description: "Force migration of state files (for manual migration after failed auto-migration)"
+
+    new_commands: []
+
+  schema_changes:
+    state_json:
+      version: "1.0.0"
+      changes:
+        - type: "add"
+          field: "schema_version"
+          data_type: "string"
+          optional: false
+          migration: "Added as '1.0.0' for new files, auto-migrated for v0.x"
+
+    config_json:
+      version: "1.0.0"
+      changes:
+        - type: "add"
+          field: "schema_version"
+          data_type: "string"
+          optional: false
+          migration: "Added as '1.0.0' for new files, defaults to '1.0.0' if missing"
+
+  storage:
+    - "Backup files: ~/.safedownload/state.json.v0.bak, config.json.v0.bak"
+
+testing:
+  unit_tests:
+    - file: "pkg/state/migration_test.go"
+      functions:
+        - "TestMigration_V0ToV1_Structure"
+        - "TestMigration_V0ToV1_DataPreservation"
+        - "TestMigration_BackupCreated"
+        - "TestMigration_IdempotentSafe"
+      coverage_target: "95%"
+
+    - file: "pkg/state/schema_test.go"
+      functions:
+        - "TestSchemaVersion_NewState"
+        - "TestSchemaVersion_Comparison"
+        - "TestSchemaVersion_ForwardCompatibility"
+      coverage_target: "100%"
+
+  integration_tests:
+    - file: "tests/integration/migration_test.go"
+      scenarios:
+        - "Full migration from v0.x state to v1.0.0"
+        - "Forward compatibility error (v2.0.0 state with v1.0.0 app)"
+        - "Rollback scenario (restore from backup)"
+      coverage_target: "Schema migration lifecycle"
+
+  e2e_tests:
+    - file: "tests/e2e/schema_test.bats"
+      scenarios:
+        - "CLI: New install creates schema_version '1.0.0'"
+        - "CLI: Old state file auto-migrates with backup"
+        - "CLI: Future schema shows error"
+
+  manual_tests:
+    - "Test with actual v0.1.0 state file"
+    - "Test migration failure (corrupt JSON)"
+    - "Test rollback from backup"
+
+dependencies:
+  external:
+    - name: "None (stdlib only)"
+      version: "N/A"
+      license: "N/A"
+      justification: "JSON parsing, file operations"
+      optional: false
+
+  internal:
+    - feature: "None"
+      name: "Standalone feature"
+      reason: "Foundation for future schema changes"
+
+  platform:
+    - "JSON parsing: jq (Bash v0.x), encoding/json (Go v1.0.0+)"
+
+documentation:
+  readme_sections:
+    - section: "Migration"
+      changes: |
+        Add "Schema Migration" section explaining:
+        - Automatic migration from v0.x to v1.0.0
+        - Backup file creation (.v0.bak suffix)
+        - Rollback instructions if migration fails
+        - Forward compatibility warnings
+
+  new_docs:
+    - file: "docs/MIGRATION.md"
+      purpose: "Detailed migration guide for major version upgrades"
+
+  changelog:
+    type: "Added"
+    entry: |
+      ### Schema Versioning (Principle VIII: Forward Compatibility)
+      - schema_version field in state.json and config.json (value: '1.0.0')
+      - Auto-migration from v0.x state files (preserves all downloads)
+      - Backup creation before migration (state.json.v0.bak)
+      - Forward compatibility check (error on newer schemas)
+      - --migrate flag for manual migration
+
+edge_cases:
+  - case: "state.json is corrupt JSON"
+    expected_behavior: "Migration fails, original file intact, error message"
+    test: "TestMigration_CorruptJSON"
+
+  - case: "schema_version is invalid (not semver)"
+    expected_behavior: "Treat as v0.x and migrate"
+    test: "TestMigration_InvalidSchemaVersion"
+
+  - case: "Backup file already exists (state.json.v0.bak)"
+    expected_behavior: "Don't overwrite, use .v0.bak.1, .v0.bak.2, etc."
+    test: "TestMigration_ExistingBackup"
+
+  - case: "Disk full during migration"
+    expected_behavior: "Migration fails, error, original file intact"
+    test: "TestMigration_DiskFull"
+
+  - case: "Partial migration (app crash mid-migration)"
+    expected_behavior: "On restart, detect partial migration, restore from backup"
+    test: "TestMigration_PartialInterruption"
+
+error_handling:
+  - error: "Migration fails (corrupt JSON)"
+    exit_code: 1
+    retry: false
+    user_action: "Check state.json syntax, restore from backup if needed"
+
+  - error: "Newer schema detected"
+    exit_code: 1
+    retry: false
+    user_action: "Upgrade SafeDownload to latest version"
+
+  - error: "Backup creation fails (permissions)"
+    exit_code: 4
+    retry: false
+    user_action: "Check write permissions on ~/.safedownload/"
+
+risks:
+  - id: "RISK010-1"
+    title: "Migration corrupts data"
+    impact: "critical"
+    probability: "low"
+    mitigation: |
+      - Create backup before migration
+      - Validate migrated data before overwriting
+      - Comprehensive migration tests with real v0.x files
+      - Idempotent migration (safe to re-run)
+
+  - id: "RISK010-2"
+    title: "Forward compatibility breaks on downgrade"
+    impact: "medium"
+    probability: "medium"
+    mitigation: |
+      - Clear error message on newer schema
+      - Don't modify file when schema too new
+      - Document downgrade risks in README
+
+  - id: "RISK010-3"
+    title: "Migration too slow for large state files"
+    impact: "low"
+    probability: "low"
+    mitigation: |
+      - Optimize JSON parsing (streaming if needed)
+      - Test with 1000+ download state files
+      - Progress indicator for large migrations (future)
+
+alternatives:
+  - approach: "Manual migration tool instead of auto-migration"
+    pros:
+      - "User control over migration process"
+      - "Can review changes before applying"
+    cons:
+      - "Extra steps for users (friction)"
+      - "Easy to forget to migrate"
+    reason_rejected: "Constitution requires zero configuration; auto-migration better UX"
+
+  - approach: "Use database (SQLite) instead of JSON"
+    pros:
+      - "Built-in schema migration tools"
+      - "Better performance for large datasets"
+    cons:
+      - "Adds dependency (violates Principle II)"
+      - "Less human-readable than JSON"
+    reason_rejected: "JSON sufficient for current scale; can migrate to SQLite in v2.0+ if needed"
+
+success_criteria:
+  quantitative:
+    - "100% of new files have schema_version field"
+    - "100% of v0.x files successfully migrate to v1.0.0"
+    - "Zero data loss during migration"
+    - "Migration completes in <1 second for typical state files"
+
+  qualitative:
+    - "Users don't notice migration (seamless upgrade)"
+    - "Developers can confidently evolve schema in future versions"
+    - "Clear migration path documented for v1.0.0 → v2.0.0"
+
+sprint_tasks:
+  setup:
+    - task: "T010-001"
+      description: "Define schema version constants and structure"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+  implementation:
+    - task: "T010-002"
+      description: "Add schema_version field to state.json generation"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+    - task: "T010-003"
+      description: "Add schema_version field to config.json generation"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+    - task: "T010-004"
+      description: "Implement migration logic (v0.x → v1.0.0)"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T010-005"
+      description: "Implement backup creation before migration"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+  testing:
+    - task: "T010-006"
+      description: "Write unit tests for migration"
+      assignee: "@peternicholls"
+      estimate: "1 SP"
+
+    - task: "T010-007"
+      description: "Write integration test with real v0.x file"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+  documentation:
+    - task: "T010-008"
+      description: "Update state-schema.md with v1.0.0 schema"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+    - task: "T010-009"
+      description: "Create docs/MIGRATION.md guide"
+      assignee: "@peternicholls"
+      estimate: "0.5 SP"
+
+notes: |
+  Constitution Compliance: This feature implements configuration and state schema
+  versioning requirements, enabling forward compatibility and seamless upgrades.
+
+  Related Constitution sections:
+  - Technical Constraints: Configuration & State Schema Versioning
+  - Principle VIII: Polyglot Architecture & Forward Compatibility
+
+  Implementation Notes:
+  - For v0.2.0 (Bash/Python): Simple field addition and basic migration
+  - For v1.0.0+ (Go): Comprehensive migration framework in pkg/state/migration.go
+  - Schema version format: semantic versioning (MAJOR.MINOR.PATCH)
+  - Migration naming: migrateVXToVY functions (e.g., migrateV0ToV1, migrateV1ToV2)
+
+  Schema Evolution Strategy:
+  - v1.0.0 → v1.1.0 (MINOR): Backward-compatible additions (optional fields)
+    - Old app can read new schema (ignore unknown fields)
+    - No migration required
+  - v1.x.x → v2.0.0 (MAJOR): Breaking changes (required fields, structure changes)
+    - Migration required (migrateV1ToV2)
+    - Backup created, all data preserved
+
+  Future Migrations (examples):
+  - v1.0.0 → v1.1.0: Add optional "tags" field to downloads
+  - v1.1.0 → v2.0.0: Change downloads from array to per-user buckets (multi-user support)
+
+  Testing Strategy:
+  - Create fixtures with v0.x state files (actual production data)
+  - Test migration with corrupt JSON, missing fields, invalid data
+  - Verify idempotency (running migration twice is safe)
+
+  See also: dev/architecture/state-schema.md for full schema versioning strategy
