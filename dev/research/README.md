@@ -98,6 +98,56 @@ dev/research/
 | P2 | Important | Complete before feature implementation |
 | P3 | Nice to have | Can proceed without, but improves quality |
 
+## Research Agent
+
+A specialized AI agent is available to conduct first-pass research automatically.
+
+### Invoking the Agent
+
+```
+/speckit.research R01          # Research specific area
+/speckit.research next         # Next priority area
+/speckit.research version 1.0.0  # Next area for version
+```
+
+### Agent Capabilities
+
+The research agent can:
+- **Select** the next research area based on priority and version
+- **Evaluate** libraries using GitHub data, documentation, code analysis
+- **Answer** key questions with confidence levels and citations
+- **Record** findings in structured YAML and Markdown formats
+- **Propose** decisions with scoring against project criteria
+- **Track** progress across all research areas
+
+### Agent Files
+
+| File | Location | Purpose |
+|------|----------|---------|
+| Agent Definition | `.github/agents/speckit.research.agent.md` | Full agent instructions |
+| Prompt | `.github/prompts/speckit.research.prompt.md` | Activation prompt |
+| Helper Script | `.specify/scripts/bash/research.sh` | Research management CLI |
+| Tool Definitions | `.specify/tools/research-tools.yaml` | Custom tool guidance |
+
+### Helper Script Usage
+
+```bash
+# Show status of all research areas
+.specify/scripts/bash/research.sh status
+
+# Get next research area as JSON
+.specify/scripts/bash/research.sh select --json
+
+# Get next research area for v1.0.0
+.specify/scripts/bash/research.sh select --version 1.0.0
+
+# Validate R01 has required files
+.specify/scripts/bash/research.sh validate --id R01
+
+# Get statistics
+.specify/scripts/bash/research.sh stats
+```
+
 ## Quick Links
 
 - [Master Research Overview](MASTER.md)
@@ -116,3 +166,31 @@ When adding research:
 3. Cite sources with URLs and access dates
 4. Record decisions with rationale
 5. Update `feedback-integration.yaml` with impacts
+
+---
+
+## Research Completion Workflow
+
+When a research area is complete, the agent follows this workflow:
+
+### 1. Validate Completion
+- [ ] All key questions have answers with confidence ≥ MEDIUM
+- [ ] At least one decision recorded in decision-log.yaml
+- [ ] Summary section filled in research.yaml
+- [ ] Executive summary written in findings.md
+
+### 2. Update Status Files
+- [ ] Update `research.yaml` metadata (status, actual_hours, completed date)
+- [ ] Update `research-plan.yaml` statistics and checklist items
+- [ ] Add decision to `decision-log.yaml` (if applicable)
+
+### 3. Integration
+- [ ] Identify feature specs that need updating
+- [ ] Identify architecture docs that need updating
+- [ ] Identify sprint tasks that are unblocked
+- [ ] Update `feedback-integration.yaml` current_status
+
+### 4. Handoff
+- [ ] Generate completion report
+- [ ] Suggest next research area
+- [ ] Offer to update affected specs/plans

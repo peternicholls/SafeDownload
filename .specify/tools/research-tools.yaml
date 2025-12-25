@@ -1,0 +1,318 @@
+# Research Agent Tool Definitions
+# MCP Server configuration for research-specific tools
+#
+# This file defines custom tools the research agent can use.
+# These complement VS Code's built-in tools and GitHub MCP tools.
+
+metadata:
+  name: "SafeDownload Research Tools"
+  version: "1.0.0"
+  description: "Custom tools for the research agent workflow"
+
+# Tool Definitions
+# These are invoked via the agent's tool-calling capability
+
+tools:
+  # ============================================================================
+  # RESEARCH INFRASTRUCTURE TOOLS
+  # ============================================================================
+
+  - name: "research_status"
+    description: |
+      Get the current status of all research areas or a specific area.
+      Returns: ID, name, priority, version, status, estimated/actual hours.
+    invocation:
+      type: "terminal"
+      command: ".specify/scripts/bash/research.sh status --json"
+    parameters: []
+    returns:
+      type: "json"
+      schema:
+        research_areas:
+          type: "array"
+          items:
+            id: "string"
+            name: "string"
+            status: "string"
+            priority: "string"
+
+  - name: "research_select_next"
+    description: |
+      Select the next research area to work on based on priority.
+      Filters by version if specified.
+      Returns the highest-priority not-started research area.
+    invocation:
+      type: "terminal"
+      command: ".specify/scripts/bash/research.sh select --json"
+    parameters:
+      - name: "version"
+        type: "string"
+        required: false
+        description: "Target version to filter by (e.g., '1.0.0')"
+    returns:
+      type: "json"
+      schema:
+        selected:
+          id: "string"
+          name: "string"
+          path: "string"
+
+  - name: "research_validate"
+    description: |
+      Validate that a research area has all required files.
+      Checks for research.yaml and findings.md.
+    invocation:
+      type: "terminal"
+      command: ".specify/scripts/bash/research.sh validate --json --id {id}"
+    parameters:
+      - name: "id"
+        type: "string"
+        required: true
+        description: "Research area ID (R01-R10)"
+    returns:
+      type: "json"
+      schema:
+        valid: "boolean"
+        errors: "array"
+
+  - name: "research_stats"
+    description: |
+      Get aggregate statistics about research progress.
+      Returns counts by status and hour estimates.
+    invocation:
+      type: "terminal"
+      command: ".specify/scripts/bash/research.sh stats --json"
+    parameters: []
+    returns:
+      type: "json"
+      schema:
+        total: "number"
+        complete: "number"
+        completion_percentage: "number"
+
+  # ============================================================================
+  # YAML MANIPULATION TOOLS
+  # ============================================================================
+
+  # Note: These describe patterns for the agent to use with file editing tools.
+  # They are not separate executables but guidance for structured updates.
+
+  - name: "update_research_yaml"
+    description: |
+      Update a research area's research.yaml file.
+      Used to: update status, record answers, mark tasks complete.
+    guidance:
+      file_pattern: "dev/research/{folder}/research.yaml"
+      common_updates:
+        - field: "metadata.status"
+          values: ["not_started", "in_progress", "complete", "blocked"]
+        - field: "metadata.actual_hours"
+          type: "number"
+        - field: "key_questions[].answer"
+          type: "string"
+        - field: "key_questions[].confidence"
+          values: ["LOW", "MEDIUM", "HIGH", "CERTAIN"]
+        - field: "tasks[].status"
+          values: ["not_started", "in_progress", "complete"]
+
+  - name: "update_research_plan"
+    description: |
+      Update the master research-plan.yaml file.
+      Used to: sync area status, update statistics, mark checklist items.
+    guidance:
+      file_path: "dev/research/research-plan.yaml"
+      common_updates:
+        - field: "research_areas[id=X].status"
+        - field: "research_areas[id=X].actual_hours"
+        - field: "research_areas[id=X].completed_date"
+        - field: "statistics.completed"
+        - field: "statistics.completion_percentage"
+        - field: "checklist_by_version.*.research_required[].checklist[].status"
+
+  - name: "add_decision"
+    description: |
+      Add a new decision to decision-log.yaml.
+      Used when research produces a clear recommendation.
+    guidance:
+      file_path: "dev/research/decision-log.yaml"
+      template_location: "decision_template section in file"
+      required_fields:
+        - "id (D001, D002, etc.)"
+        - "title"
+        - "category"
+        - "research_id"
+        - "status (PROPOSED)"
+        - "options_considered"
+        - "decision.selection"
+        - "decision.rationale"
+
+  # ============================================================================
+  # WEB RESEARCH TOOLS
+  # ============================================================================
+
+  - name: "evaluate_github_library"
+    description: |
+      Evaluate a GitHub library for potential use.
+      Gathers: stars, license, last update, issues, dependencies.
+    guidance:
+      tools_to_use:
+        - "mcp_io_github_git_search_repositories (find repo)"
+        - "fetch_webpage (read README, docs)"
+        - "semantic_search (if cloned locally)"
+      evaluation_criteria:
+        - "Stars and community size"
+        - "License (BSD/MIT/Apache preferred)"
+        - "Last commit date (within 6 months preferred)"
+        - "Open issues (especially bugs)"
+        - "Dependency count"
+        - "Documentation quality"
+      output_format: |
+        | Aspect | Value | Assessment |
+        |--------|-------|------------|
+        | Stars | X | Good/Fair/Poor |
+        | License | MIT | ✓ Compatible |
+        | Last Update | 2024-06 | ✓ Active |
+
+  - name: "search_documentation"
+    description: |
+      Search official documentation for a library or pattern.
+    guidance:
+      tools_to_use:
+        - "vscode-websearchforcopilot_webSearch (find docs URL)"
+        - "fetch_webpage (read documentation)"
+      best_practices:
+        - "Start with official docs, not blog posts"
+        - "Note the version documented"
+        - "Extract code examples"
+        - "Identify gaps or limitations"
+
+  - name: "study_reference_project"
+    description: |
+      Study a reference project's source code for patterns.
+    guidance:
+      tools_to_use:
+        - "mcp_io_github_git_search_repositories (find project)"
+        - "fetch_webpage (browse files on GitHub)"
+        - "semantic_search (search for patterns)"
+        - "grep_search (find specific code)"
+      study_approach:
+        - "Identify main entry points"
+        - "Find the feature relevant to our research"
+        - "Extract implementation patterns"
+        - "Note configuration and extension points"
+
+# ============================================================================
+# RESEARCH WORKFLOW SEQUENCES
+# ============================================================================
+
+workflows:
+  start_research:
+    description: "Begin a new research area"
+    steps:
+      - tool: "research_select_next"
+        or: "Specify R## directly"
+      - tool: "research_validate"
+        params: { id: "{selected_id}" }
+      - action: "Read research.yaml for objectives and questions"
+      - action: "Read constitution.md for alignment principles"
+      - action: "Present research brief and confirm with user"
+
+  evaluate_library:
+    description: "Evaluate a library option"
+    steps:
+      - tool: "evaluate_github_library"
+        params: { repo: "{library_url}" }
+      - tool: "search_documentation"
+        params: { query: "{library_name} documentation" }
+      - action: "Create comparison row in findings.md"
+      - action: "Score against decision criteria"
+
+  answer_question:
+    description: "Answer a key research question"
+    steps:
+      - action: "Gather evidence from completed tasks"
+      - action: "Formulate answer with confidence level"
+      - tool: "update_research_yaml"
+        params: { field: "key_questions[].answer" }
+      - action: "Document supporting sources"
+
+  complete_research:
+    description: "Wrap up a research area"
+    steps:
+      - action: "Verify all questions answered"
+      - action: "Write executive summary in findings.md"
+      - tool: "update_research_yaml"
+        params: { status: "complete" }
+      - tool: "update_research_plan"
+        params: { sync status and statistics }
+      - tool: "add_decision"
+        condition: "if clear recommendation emerged"
+      - action: "Report completion with next steps"
+
+# ============================================================================
+# CONSTITUTION ALIGNMENT CHECKLIST
+# ============================================================================
+
+constitution_checks:
+  description: |
+    Before finalizing any research decision, verify alignment
+    with these constitution principles:
+
+  principles:
+    - id: "I"
+      name: "Resumable Downloads"
+      check: "Does this support resume as a core feature?"
+
+    - id: "II"
+      name: "Optional Enhanced Features"
+      check: "Does this allow features to be optional?"
+
+    - id: "V"
+      name: "Privacy"
+      check: "Does this maintain privacy (no analytics, etc.)?"
+
+    - id: "VIII"
+      name: "Minimal Dependencies"
+      check: "Does this minimize external dependencies?"
+
+    - id: "IX"
+      name: "Accessibility"
+      check: "Does this support screen readers and accessibility?"
+
+    - id: "XI"
+      name: "Professional UX"
+      check: "Does this contribute to professional UX standards?"
+
+  performance_gates:
+    - gate: "TUI Startup"
+      requirement: "<500ms"
+      check: "Will this impact startup time?"
+
+    - gate: "List Downloads"
+      requirement: "<100ms"
+      check: "Will this impact list rendering?"
+
+# ============================================================================
+# INTEGRATION TARGETS
+# ============================================================================
+
+integration_targets:
+  description: |
+    When research completes, findings may need to update these files:
+
+  targets:
+    - pattern: "dev/specs/features/F*.yaml"
+      when: "Research produces library selection or architecture decision"
+      update: "implementation section"
+
+    - pattern: "dev/architecture/*.md"
+      when: "Research produces significant architecture insight"
+      update: "relevant section with decision reference"
+
+    - pattern: "dev/sprints/*.yaml"
+      when: "Research unblocks sprint tasks"
+      update: "remove pending_research blockers"
+
+    - pattern: "dev/roadmap.yaml"
+      when: "Research reveals need to re-sequence"
+      update: "version sequencing"

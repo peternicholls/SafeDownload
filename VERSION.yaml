@@ -1,11 +1,11 @@
 # SafeDownload Version Information
 # This file tracks the application version and release metadata.
 # See .specify/memory/constitution.md for versioning policy.
-
+# Use semantic versioning: MAJOR.MINOR.PATCH
+# This file shoudl be updated by the workflow, not manually.
+---
 version: "0.1.0"
 schema_version: "1.0.0"
 release_date: "2025-12-24"
 codename: "Bootstrap"
-
-# Release notes summary (see CHANGELOG.md for full details)
-notes: "Initial version with core download functionality, resumable downloads, and simple TUI"
+stability: "alpha"
