@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "downloads": [
+    {
+      "id": 1,
+      "url": "https://example.com/file1.zip",
+      "output": "/tmp/file1.zip",
+      "status": "completed",
+      "progress": 10485760,
+      "total": 10485760,
+      "checksum": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": 2,
+      "url": "https://example.com/file2.tar.gz",
+      "output": "/tmp/file2.tar.gz",
+      "status": "queued",
+      "progress": 0,
+      "total": 52428800
+    },
+    {
+      "id": 3,
+      "url": "https://example.com/large.iso",
+      "output": "/tmp/large.iso",
+      "status": "paused",
+      "progress": 536870912,
+      "total": 4294967296,
+      "checksum": "sha256:abc123def456789"
+    }
+  ],
+  "config": {
+    "parallel": 3,
+    "output_dir": "~/Downloads"
+  }
+}

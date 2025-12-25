@@ -1,0 +1,173 @@
+# SafeDownload Release Workflow
+# Constitution: v1.5.0 - Release Cycle & Distribution
+#
+# Triggers on version tags (vX.Y.Z)
+# Builds multi-platform binaries, generates checksums, creates GitHub release
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  GO_VERSION: '1.21'
+
+jobs:
+  # ===========================================================================
+  # Run Tests First
+  # ===========================================================================
+  test:
+    name: Pre-release Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Run tests
+        run: |
+          if [[ -f go.mod ]]; then
+            go test -v -race ./...
+          elif [[ -f tests/test.sh ]]; then
+            chmod +x tests/test.sh
+            ./tests/test.sh
+          fi
+
+  # ===========================================================================
+  # Build Multi-Platform Binaries
+  # ===========================================================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test]
+    strategy:
+      matrix:
+        include:
+          # Tier 1 platforms (Constitution)
+          - goos: darwin
+            goarch: amd64
+            suffix: darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            suffix: darwin-arm64
+          - goos: linux
+            goarch: amd64
+            suffix: linux-amd64
+          - goos: linux
+            goarch: arm64
+            suffix: linux-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        if: hashFiles('go.mod') != ''
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build binary
+        if: hashFiles('go.mod') != ''
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p dist
+          go build -ldflags="-s -w -X main.Version=${{ steps.version.outputs.version }}" \
+            -o "dist/safedownload-${{ steps.version.outputs.version }}-${{ matrix.suffix }}" \
+            ./cmd/safedownload/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.suffix }}
+          path: dist/
+
+  # ===========================================================================
+  # Create Release
+  # ===========================================================================
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist/
+          pattern: binary-*
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum safedownload-* > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Package source
+        run: |
+          git archive --format=tar.gz --prefix=safedownload-${{ steps.version.outputs.version }}/ \
+            -o dist/safedownload-${{ steps.version.outputs.version }}-source.tar.gz HEAD
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          # Extract changelog for this version
+          VERSION=${{ steps.version.outputs.version }}
+          if [[ -f CHANGELOG.md ]]; then
+            # Extract section for this version
+            awk "/^## \[$VERSION\]/,/^## \[/" CHANGELOG.md | head -n -1 > release_notes.md
+            if [[ ! -s release_notes.md ]]; then
+              echo "Release v$VERSION" > release_notes.md
+            fi
+          else
+            echo "Release v$VERSION" > release_notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          files: |
+            dist/safedownload-*
+            dist/SHA256SUMS
+          draft: false
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
+
+  # ===========================================================================
+  # Update Homebrew Tap (Future)
+  # ===========================================================================
+  homebrew:
+    name: Update Homebrew
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: "!contains(github.ref, '-alpha') && !contains(github.ref, '-beta') && !contains(github.ref, '-rc')"
+    steps:
+      - name: Homebrew update placeholder
+        run: |
+          echo "Homebrew tap update will be implemented in F021"
+          # Future: Update peternicholls/homebrew-safedownload
