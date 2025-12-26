@@ -145,9 +145,68 @@ error_handling:
 
 testing:
   implemented_tests:
-    - "SHA256 verification with valid checksum"
-    - "SHA256 verification with invalid checksum"
-    - "Size verification"
+    - name: "SHA256 verification with valid checksum"
+      status: "implemented"
+      location: "archive/2025-12-24/safedownload:407-433"
+    - name: "SHA256 verification with invalid checksum"
+      status: "implemented"
+      location: "archive/2025-12-24/safedownload:407-433"
+    - name: "Size verification"
+      status: "implemented"
+      notes: "Content-Length verification integrated"
+
+actual_implementation:
+  file: "archive/2025-12-24/safedownload"
+  checksum_function: "Lines 407-433"
+  
+  algorithms_implemented:
+    - algorithm: "SHA256"
+      command: "sha256sum"
+      default: true
+      notes: "Recommended for general use"
+    - algorithm: "SHA512"
+      command: "sha512sum"
+      notes: "Use for maximum security"
+    - algorithm: "SHA1"
+      command: "sha1sum"
+      notes: "Legacy support only"
+    - algorithm: "MD5"
+      command: "md5sum"
+      notes: "Legacy support only, not recommended"
+  
+  verification_approach:
+    timing: "Post-download (after file complete)"
+    method: "System utilities (sha256sum, sha512sum, etc.)"
+    case_sensitivity: "Case-insensitive comparison"
+    error_handling: "Exit code 3 on mismatch (needs verification)"
+  
+  cli_formats:
+    - "--sha256 HASH"
+    - "--sha512 HASH"
+    - "--sha1 HASH"
+    - "Manifest format: url filename sha256:hash"
+  
+  implementation_notes:
+    algorithm_selection:
+      - "SHA256 is default and recommended"
+      - "All algorithms use system commands (sha256sum, sha512sum, md5sum)"
+      - "Case-insensitive hash comparison for robustness"
+    
+    performance:
+      - algorithm: "SHA256"
+        estimated_speed: "~100-200 MB/s on modern hardware"
+        notes: "Speed depends on CPU, not I/O bound"
+      - algorithm: "SHA512"
+        estimated_speed: "~150-250 MB/s on modern hardware"
+        notes: "Can be faster than SHA256 on 64-bit systems"
+      - algorithm: "MD5"
+        estimated_speed: "~300-500 MB/s"
+        notes: "Fastest but cryptographically broken"
+    
+    edge_cases:
+      - "Missing checksum tool: Error with clear message"
+      - "Invalid hash format: Validation before download"
+      - "File size mismatch: Detected via Content-Length"
 
 documentation:
   readme_sections:
@@ -159,3 +218,7 @@ notes: |
   Spec backfilled for documentation completeness.
 
   Future enhancement (F017): GPG signature verification for defense-in-depth.
+  
+  Implementation validated against archive/2025-12-24/safedownload.
+  Checksum verification function at lines 407-433.
+  CLI flags: --sha256, --sha512, --sha1 (lines 1567+).
