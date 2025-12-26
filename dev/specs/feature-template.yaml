@@ -2,6 +2,7 @@
 # Use this template for all feature specs in dev/specs/features/
 
 metadata:
+  schema_version: "1.0.0"
   id: "F000" # Sequential feature ID from roadmap.yaml
   name: "Feature Name"
   version: "X.Y.Z" # Target version for this feature
@@ -11,6 +12,9 @@ metadata:
   story_points: 0 # Estimated effort (Fibonacci: 1, 2, 3, 5, 8, 13, 21)
   created: "YYYY-MM-DD"
   updated: "YYYY-MM-DD"
+  # For backfilled specs only:
+  backfilled: false # Set to true if spec was written after implementation
+  completed_date: "" # YYYY-MM-DD when feature was completed (for backfilled specs)
 
 # Brief description of the feature (2-3 sentences)
 description: |
@@ -51,8 +55,12 @@ user_stories:
       So that [benefit].
 
     acceptance_criteria:
-      - "GIVEN [initial state], WHEN [action], THEN [expected outcome]"
-      - "GIVEN [initial state], WHEN [action], THEN [expected outcome]"
+      - id: "AC000-1-1" # Format: AC<feature>-<story>-<seq>
+        criterion: "GIVEN [initial state], WHEN [action], THEN [expected outcome]"
+        test_refs: [] # List of test IDs that verify this criterion (e.g., ["UT000-1", "IT000-1"])
+      - id: "AC000-1-2"
+        criterion: "GIVEN [initial state], WHEN [action], THEN [expected outcome]"
+        test_refs: []
 
     # How to test this story independently (for MVP slicing)
     independent_test: |
@@ -146,6 +154,21 @@ implementation:
 
 # Testing plan
 testing:
+  # Traceability: Map test IDs to acceptance criteria/requirements
+  traceability:
+    - test_id: "UT000-1" # Format: UT<feature>-<seq> for unit tests
+      type: "unit"
+      verifies: ["AC000-1-1", "FR000-1"] # Acceptance criteria and/or requirement IDs
+      file: "pkg/example/example_test.go::TestExample_HappyPath"
+    - test_id: "IT000-1" # Format: IT<feature>-<seq> for integration tests
+      type: "integration"
+      verifies: ["AC000-1-2"]
+      file: "tests/integration/example_test.go::TestExampleIntegration"
+    - test_id: "E2E000-1" # Format: E2E<feature>-<seq> for end-to-end tests
+      type: "e2e"
+      verifies: ["AC000-1-1", "AC000-1-2"]
+      file: "tests/e2e/example_test.bats::example_command_valid_input"
+
   unit_tests:
     - file: "pkg/example/example_test.go"
       functions:
@@ -274,6 +297,43 @@ sprint_tasks:
       description: "Write unit tests"
       assignee: "TBD"
       estimate: "2 SP"
+
+# =============================================================================
+# BACKFILLED SPEC SECTION (Only for specs written after implementation)
+# =============================================================================
+# Use this section ONLY if metadata.backfilled is true
+
+# Implementation results (for backfilled specs only)
+# Record actual test results and implementation details discovered during backfilling
+implementation_results:
+  test_coverage:
+    overall: "0%" # Actual measured coverage percentage
+    by_component: []
+      # - component: "pkg/example"
+      #   coverage: "85%"
+  
+  test_results:
+    date_run: "YYYY-MM-DD"
+    tests_passed: 0
+    tests_failed: 0
+    tests_skipped: 0
+    notes: ""
+  
+  performance_measurements:
+    # - metric: "Startup time"
+    #   target: "<500ms"
+    #   actual: "287ms"
+    #   status: "passed"
+  
+  lessons_learned:
+    # - "Discovered edge case X that wasn't in original design"
+    # - "Had to refactor Y to support Z"
+  
+  deviations_from_spec:
+    # - area: "CLI flags"
+    #   spec: "--foo flag with boolean value"
+    #   actual: "--foo flag implemented as string"
+    #   reason: "Needed to support additional options discovered during implementation"
 
 # Notes and additional context
 notes: |
