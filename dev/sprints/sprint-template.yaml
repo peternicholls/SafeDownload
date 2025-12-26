@@ -2,6 +2,7 @@
 # Copy this file to sprint-NN.yaml and fill in details
 
 metadata:
+  schema_version: "1.0.0"
   sprint: 0 # Sequential sprint number
   version: "X.Y.Z" # Target release version
   start_date: "YYYY-MM-DD"
@@ -16,10 +17,51 @@ features:
     story_points: 0
     status: "not_started" # not_started | in_progress | completed | blocked
     priority: "P1" # P1 (must have) | P2 (should have) | P3 (nice to have)
-    dependencies: [] # List of feature IDs this depends on
+    spec_ref: "dev/specs/features/F000-feature-name.yaml" # Link to feature spec
+    dependencies:
+      internal: [] # List of feature IDs this depends on (e.g., ["F001", "F002"])
+      external: [] # External dependencies (libraries, tools) from spec
+      verified: false # Set to true after dependency audit
     notes: |
       Any sprint-specific notes about this feature.
       E.g., "Focus on US001-1 and US001-2 only this sprint"
+
+# =============================================================================
+# DEPENDENCY AUDIT CHECKLIST (Complete before sprint starts)
+# =============================================================================
+dependency_audit:
+  completed: false # Set to true when all checks pass
+  completed_date: "" # YYYY-MM-DD
+  auditor: "" # GitHub username of person who performed audit
+  
+  checks:
+    - id: "DEP-001"
+      description: "All feature dependencies are documented in spec files"
+      status: "not_checked" # not_checked | passed | failed | n/a
+      notes: ""
+    
+    - id: "DEP-002"
+      description: "Prerequisite features are completed or in current sprint"
+      status: "not_checked"
+      notes: ""
+    
+    - id: "DEP-003"
+      description: "External dependencies are available and licensed correctly"
+      status: "not_checked"
+      notes: ""
+    
+    - id: "DEP-004"
+      description: "No circular dependencies between sprint features"
+      status: "not_checked"
+      notes: ""
+    
+    - id: "DEP-005"
+      description: "Task dependencies within sprint are correctly sequenced"
+      status: "not_checked"
+      notes: ""
+  
+  blockers_identified: [] # List any dependency blockers found
+  resolution_plan: "" # How blockers will be resolved
 
 # Daily task breakdown
 tasks:
@@ -32,6 +74,7 @@ tasks:
     status: "not_started" # not_started | in_progress | completed | blocked
     day: 1 # Target day within sprint (1-10 for 2-week sprint)
     dependencies: [] # List of task IDs this depends on
+    spec_refs: [] # Spec section references (e.g., ["F000:US000-1", "F000:FR000-1"])
     notes: ""
 
   # Implementation phase
@@ -43,6 +86,7 @@ tasks:
     status: "not_started"
     day: 2
     dependencies: ["T000-001"]
+    spec_refs: ["F000:US000-1", "F000:FR000-1"] # Links to user stories/requirements
     notes: ""
 
   # Testing phase
@@ -54,6 +98,7 @@ tasks:
     status: "not_started"
     day: 7
     dependencies: ["T000-002"]
+    spec_refs: ["F000:testing.unit_tests"]
     notes: ""
 
   # Documentation phase

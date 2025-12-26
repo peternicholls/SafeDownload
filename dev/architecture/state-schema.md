@@ -1,7 +1,7 @@
 # State Schema & Versioning
 
 **Version**: 1.0.0  
-**Constitution**: v1.3.0 - Configuration & State Schema Versioning  
+**Constitution**: v1.5.0 - Configuration & State Schema Versioning  
 **Status**: Design Document
 
 ## Overview

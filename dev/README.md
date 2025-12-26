@@ -153,7 +153,7 @@ go tool cover -func=coverage.out | grep total
 title: "Architecture Decision"
 version: "X.Y.Z"
 status: "planned | active | deprecated"
-constitution: "v1.3.0"
+constitution: "v1.5.0"
 principles:
   - "Principle Roman Numeral: Name"
 ---
@@ -359,6 +359,6 @@ The `dev/` folder complements `.specify/` but serves different purposes:
 
 ---
 
-**Last Updated**: 2025-12-25  
-**Constitution**: v1.3.0  
+**Last Updated**: 2025-12-26  
+**Constitution**: v1.5.0  
 **Roadmap**: dev/roadmap.yaml

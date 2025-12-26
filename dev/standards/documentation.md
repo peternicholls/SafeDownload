@@ -1,6 +1,6 @@
 # Documentation Standards
 
-**Constitution**: v1.3.0 - Development Workflow & Quality Gates  
+**Constitution**: v1.5.0 - Development Workflow & Quality Gates  
 **Status**: Active  
 **Applies To**: All SafeDownload code, specs, and design documents
 
@@ -22,7 +22,7 @@ Documentation must be **idiomatic** for each language:
 #!/usr/bin/env bash
 # safedownload - Professional download manager with resumable downloads
 # Version: 0.2.0
-# Constitution: v1.3.0
+# Constitution: v1.5.0
 #
 # Usage: safedownload <url> [options]
 # See --help for full documentation
@@ -184,7 +184,7 @@ Example:
     >>> state.add_download(url="https://example.com/file.zip", output="/tmp/file.zip")
     >>> state.save()
 
-Constitution: v1.3.0
+Constitution: v1.5.0
 Schema Version: 1.0.0
 """
 
@@ -353,7 +353,7 @@ risks:
 title: "Go Core Migration"
 version: "1.0.0"
 status: planned
-constitution: v1.3.0
+constitution: v1.5.0
 principles:
   - VIII: Polyglot Architecture & Forward Compatibility
 ---

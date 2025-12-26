@@ -2,8 +2,8 @@
 
 Quick reference guide to all planning and architecture documents in `dev/`.
 
-**Last Updated**: 2025-12-25  
-**Constitution**: v1.3.0
+**Last Updated**: 2025-12-26  
+**Constitution**: v1.5.0
 
 ## Quick Start
 

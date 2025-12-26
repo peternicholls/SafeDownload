@@ -1,6 +1,6 @@
 # Testing Standards
 
-**Constitution**: v1.3.0 - Development Workflow & Quality Gates  
+**Constitution**: v1.5.0 - Development Workflow & Quality Gates  
 **Status**: Active  
 **Applies To**: All SafeDownload code and features
 

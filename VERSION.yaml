@@ -2,7 +2,7 @@
 # This file tracks the application version and release metadata.
 # See .specify/memory/constitution.md for versioning policy.
 # Use semantic versioning: MAJOR.MINOR.PATCH
-# This file shoudl be updated by the workflow, not manually.
+# This file should be updated by the workflow, not manually.
 ---
 version: "0.1.0"
 schema_version: "1.0.0"

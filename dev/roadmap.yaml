@@ -1,12 +1,13 @@
 # SafeDownload Development Roadmap
-# Constitution: v1.3.0
+# Constitution: v1.5.0
 # Current Version: 0.1.0
-# Last Updated: 2025-12-24
+# Last Updated: 2025-12-26
 
 metadata:
+  schema_version: "1.0.0"
   project: SafeDownload
   repository: peternicholls/SafeDownload
-  constitution_version: "1.3.0"
+  constitution_version: "1.5.0"
   current_version: "0.1.0"
   versioning: semantic # MAJOR.MINOR.PATCH
   release_cycle: "6-8 weeks for minor releases"

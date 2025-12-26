@@ -1,6 +1,6 @@
 # Accessibility Testing Checklist
 
-**Constitution**: v1.3.0 - Principle XI (Accessibility)  
+**Constitution**: v1.5.0 - Principle XI (Accessibility)  
 **Purpose**: Ensure TUI is accessible to all users regardless of visual abilities or terminal capabilities  
 **Required For**: All TUI changes, theme updates, new visual indicators
 

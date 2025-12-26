@@ -3,7 +3,7 @@
 **Version**: 1.1.0  
 **Status**: Planned  
 **Target**: Q3 2026  
-**Constitution**: v1.3.0 Principle I (Professional UX)
+**Constitution**: v1.5.0 Principle I (Professional UX)
 
 ## Executive Summary
 

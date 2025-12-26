@@ -3,7 +3,7 @@
 **Version**: 1.0.0  
 **Status**: Planned  
 **Target**: Q2 2026  
-**Constitution**: v1.3.0 Principle VIII
+**Constitution**: v1.5.0 Principle VIII
 
 ## Executive Summary
 
