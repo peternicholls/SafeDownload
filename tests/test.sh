@@ -21,6 +21,8 @@ set -euo pipefail
 # ===========================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# PROJECT_ROOT is available for future use if needed
+# shellcheck disable=SC2034
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FIXTURES_DIR="$SCRIPT_DIR/fixtures"
 TEMP_DIR=""
@@ -196,12 +198,14 @@ test_checksum_format_sha256() {
 }
 
 test_checksum_format_sha512() {
-    local checksum="sha512:$(printf 'test' | sha512sum | awk '{print $1}')"
+    local checksum
+    checksum="sha512:$(printf 'test' | sha512sum | awk '{print $1}')"
     [[ "$checksum" =~ ^sha512:[a-f0-9]{128}$ ]]
 }
 
 test_checksum_format_md5() {
-    local checksum="md5:$(printf 'test' | md5sum | awk '{print $1}')"
+    local checksum
+    checksum="md5:$(printf 'test' | md5sum | awk '{print $1}')"
     [[ "$checksum" =~ ^md5:[a-f0-9]{32}$ ]]
 }
 
@@ -231,6 +235,7 @@ test_fixture_manifest_exists() {
 main() {
     local run_unit=true
     local run_e2e=true
+    # shellcheck disable=SC2034
     local verbose=false
     
     # Parse arguments

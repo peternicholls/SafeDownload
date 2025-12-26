@@ -37,6 +37,7 @@ REPO_ROOT=$(get_repo_root)
 RESEARCH_DIR="$REPO_ROOT/dev/research"
 RESEARCH_PLAN="$RESEARCH_DIR/research-plan.yaml"
 DECISION_LOG="$RESEARCH_DIR/decision-log.yaml"
+# shellcheck disable=SC2034
 FEEDBACK_INTEGRATION="$RESEARCH_DIR/feedback-integration.yaml"
 CONSTITUTION="$REPO_ROOT/.specify/memory/constitution.md"
 
