@@ -21,8 +21,8 @@ metadata:
   version: "1.0.0"
   created: "2025-12-25"
   updated: "2025-12-25"
-  total_decisions: 0
-  decisions_pending: 0
+  total_decisions: 1
+  decisions_pending: 1
   decisions_approved: 0
   decisions_implemented: 0
 
@@ -137,7 +137,128 @@ decision_template:
 
 # Actual Decisions
 # Add new decisions here as research produces them
-decisions: []
+decisions:
+  - id: "D001"
+    title: "HTTP Client Library Selection for Go Core"
+    category: "LIBRARY_SELECTION"
+    research_id: "R01"
+    feature_ids:
+      - "F011"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-25"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Need to select HTTP client approach for SafeDownload's Go core download engine, supporting resumable downloads via Range headers"
+      constraints:
+        - "Must support HTTP Range headers for resume (Constitution Principle III)"
+        - "Minimal external dependencies (Constitution Principle II)"
+        - "Context cancellation for clean abort"
+        - "Connection pooling for concurrent downloads"
+      assumptions:
+        - "Performance is comparable across options with proper configuration"
+        - "stdlib net/http provides sufficient primitives"
+        - "Custom wrapper development effort is acceptable (2-3 days)"
+
+    options_considered:
+      - name: "stdlib net/http with custom wrapper"
+        pros:
+          - "Zero external dependencies"
+          - "Full control over implementation"
+          - "Battle-tested by millions of Go applications"
+          - "Maintained by Go team"
+          - "HTTP/2 automatic upgrade"
+          - "First-class context cancellation"
+        cons:
+          - "More boilerplate code needed"
+          - "Must implement progress tracking manually"
+          - "Resume logic requires custom implementation"
+        score: 91.5
+
+      - name: "grab library (github.com/cavaliergopher/grab)"
+        pros:
+          - "Built-in resume support"
+          - "Progress tracking via channels"
+          - "Checksum verification included"
+          - "Batch download API"
+          - "Well-designed API"
+        cons:
+          - "Last major update 4 years ago"
+          - "28 open issues"
+          - "External dependency"
+          - "No HTTP/2 optimizations"
+        score: 71.0
+
+      - name: "resty library (github.com/go-resty/resty)"
+        pros:
+          - "Actively maintained"
+          - "Large community (11k+ stars)"
+          - "Rich middleware ecosystem"
+        cons:
+          - "Not designed for file downloads"
+          - "No resume support built-in"
+          - "Heavy feature set we don't need"
+          - "Multiple transitive dependencies"
+        score: 71.5
+
+      - name: "go-retryablehttp (github.com/hashicorp/go-retryablehttp)"
+        pros:
+          - "Automatic retry with backoff"
+          - "Maintained by HashiCorp"
+        cons:
+          - "MPL-2.0 license (more restrictive)"
+          - "Retries entire request, not resume"
+          - "80 open issues"
+          - "External dependency"
+        score: 66.5
+
+    decision:
+      selection: "stdlib net/http with custom wrapper"
+      rationale: |
+        stdlib net/http provides all primitives needed for resumable downloads
+        while maintaining zero external dependencies. This aligns perfectly with
+        Constitution Principle II (minimal dependencies). The grab library
+        offers excellent patterns to study and inform our wrapper design, but
+        its maintenance status (4 years since major update) creates long-term risk.
+
+        Key factors:
+        1. Zero dependencies = no external project risk
+        2. Full control over resume behavior implementation
+        3. Can be optimized specifically for our use case
+        4. Go team maintenance ensures long-term stability
+      trade_offs_accepted:
+        - "Additional 2-3 days development time for wrapper"
+        - "Must implement and test resume logic ourselves"
+        - "Progress tracking requires custom implementation"
+      fallback_plan: "If custom wrapper proves problematic, can adopt grab as a reference and port specific modules"
+
+    implementation:
+      effort_estimate: "M"
+      blocking_tasks:
+        - "Create download manager wrapper with Resume support"
+        - "Implement connection pooling configuration"
+        - "Write comprehensive tests for Range header handling"
+      non_blocking_tasks:
+        - "Benchmark against grab for performance validation"
+        - "Document API surface for future contributors"
+
+    review:
+      reviewers: []
+      concerns_raised: []
+      concerns_addressed: []
+
+    validation:
+      success_criteria:
+        - "Resume correctly handles 206 Partial Content responses"
+        - "Graceful degradation when Range not supported"
+        - "Connection pool efficiently handles concurrent downloads"
+        - "Startup time <500ms (performance gate)"
+        - "Memory usage within acceptable bounds"
+      validation_method: "Integration tests + benchmarks during Sprint 01"
+      revisit_trigger: "If implementation takes >5 days or performance benchmarks fail gates"
 
 # Decision Backlog
 # Decisions that need to be made but lack sufficient research

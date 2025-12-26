@@ -21,14 +21,14 @@ research_areas:
     folder: "01-go-http-client"
     target_version: "1.0.0"
     priority: "P0"
-    status: "not_started"
+    status: "complete"
     estimated_hours: 3
-    actual_hours: 0
-    assigned_to: null
+    actual_hours: 3
+    assigned_to: "Agent"
     blocks:
       - "F011" # Go Core Library
     due_date: null
-    completed_date: null
+    completed_date: "2025-12-25"
 
   - id: "R02"
     name: "Bubble Tea TUI Framework"
@@ -193,15 +193,15 @@ checklist_by_version:
         must_complete_before: "Sprint 3 start"
         checklist:
           - item: "Evaluate grab vs stdlib"
-            status: "not_done"
+            status: "done"
           - item: "Range header implementation research"
-            status: "not_done"
+            status: "done"
           - item: "Connection pooling patterns"
-            status: "not_done"
+            status: "done"
           - item: "Context cancellation patterns"
-            status: "not_done"
+            status: "partial"
           - item: "Decision: library selection"
-            status: "not_done"
+            status: "done"
 
       - research_id: "R03"
         name: "Rate Limiting Algorithms"
@@ -380,7 +380,7 @@ timeline:
         - name: "HTTP library selected"
           research_id: "R01"
           target_date: null
-          completed: false
+          completed: true
         - name: "Migration strategy defined"
           research_id: "R05"
           target_date: null
@@ -449,13 +449,13 @@ timeline:
 
 statistics:
   total_areas: 10
-  not_started: 10
+  not_started: 9
   in_progress: 0
-  completed: 0
+  completed: 1
   blocked: 0
   total_estimated_hours: 38
-  total_actual_hours: 0
-  completion_percentage: 0
+  total_actual_hours: 3
+  completion_percentage: 10
 
 # =============================================================================
 # NOTES
