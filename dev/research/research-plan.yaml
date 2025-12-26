@@ -35,28 +35,28 @@ research_areas:
     folder: "02-bubble-tea-tui"
     target_version: "1.1.0"
     priority: "P0"
-    status: "not_started"
+    status: "complete"
     estimated_hours: 6
-    actual_hours: 0
-    assigned_to: null
+    actual_hours: 5.5
+    assigned_to: "Agent"
     blocks:
       - "F014" # Bubble Tea TUI
     due_date: null
-    completed_date: null
+    completed_date: "2025-12-26"
 
   - id: "R03"
     name: "Rate Limiting Algorithms"
     folder: "03-rate-limiting"
     target_version: "1.0.0"
     priority: "P1"
-    status: "not_started"
+    status: "complete"
     estimated_hours: 2
-    actual_hours: 0
-    assigned_to: null
+    actual_hours: 2
+    assigned_to: "Agent"
     blocks:
       - "F011" # Go Core Library
     due_date: null
-    completed_date: null
+    completed_date: "2025-12-26"
 
   - id: "R04"
     name: "Accessible Terminal UI Patterns"
@@ -208,15 +208,15 @@ checklist_by_version:
         must_complete_before: "Sprint 3 start"
         checklist:
           - item: "Token bucket vs leaky bucket analysis"
-            status: "not_done"
+            status: "done"
           - item: "golang.org/x/time/rate evaluation"
-            status: "not_done"
+            status: "done"
           - item: "io.Reader wrapper pattern"
-            status: "not_done"
+            status: "done"
           - item: "Accuracy testing approach"
-            status: "not_done"
+            status: "done"
           - item: "Decision: algorithm selection"
-            status: "not_done"
+            status: "done"
 
       - research_id: "R05"
         name: "State Migration Strategies"
@@ -257,21 +257,21 @@ checklist_by_version:
         must_complete_before: "Sprint 6 start"
         checklist:
           - item: "Elm Architecture deep dive"
-            status: "not_done"
+            status: "done"
           - item: "Study lazygit source code"
-            status: "not_done"
+            status: "done"
           - item: "Study glow source code"
-            status: "not_done"
+            status: "done"
           - item: "Performance optimization patterns"
-            status: "not_done"
+            status: "done"
           - item: "Virtual scrolling implementation"
-            status: "not_done"
+            status: "done"
           - item: "Testing strategies (golden files)"
-            status: "not_done"
+            status: "done"
           - item: "Theme switching patterns"
-            status: "not_done"
+            status: "done"
           - item: "Component composition guide"
-            status: "not_done"
+            status: "done"
 
   v1_2_0:
     name: "Velocity"
@@ -365,7 +365,7 @@ timeline:
         - name: "Rate limiting approach selected"
           research_id: "R03"
           target_date: null
-          completed: false
+          completed: true
 
     - phase: 2
       name: "Go Core Research"
@@ -401,11 +401,11 @@ timeline:
         - name: "Bubble Tea architecture understood"
           research_id: "R02"
           target_date: null
-          completed: false
+          completed: true
         - name: "Component library designed"
           research_id: "R02"
           target_date: null
-          completed: false
+          completed: true
 
     - phase: 4
       name: "Advanced Features Research"
@@ -449,13 +449,13 @@ timeline:
 
 statistics:
   total_areas: 10
-  not_started: 9
+  not_started: 7
   in_progress: 0
-  completed: 1
+  completed: 3
   blocked: 0
   total_estimated_hours: 38
-  total_actual_hours: 3
-  completion_percentage: 10
+  total_actual_hours: 10.5
+  completion_percentage: 30
 
 # =============================================================================
 # NOTES
