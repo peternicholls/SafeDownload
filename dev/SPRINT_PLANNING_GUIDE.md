@@ -104,7 +104,58 @@ tasks:
 - Days 7-8: Testing
 - Days 9-10: Documentation and polish
 
-### Step 5: Validate Constitution Compliance
+### Step 5: Dependency Audit
+
+**Before the sprint can begin**, complete the dependency audit checklist in the sprint YAML:
+
+**Dependency Audit Checklist**:
+
+| Check | Description | How to Verify |
+|-------|-------------|---------------|
+| DEP-001 | All feature dependencies documented in spec files | Review each feature's `dependencies.internal` section |
+| DEP-002 | Prerequisite features completed or in sprint | Cross-reference with `dev/specs/features/` status |
+| DEP-003 | External dependencies available and licensed | Check library availability, verify license compatibility |
+| DEP-004 | No circular dependencies | Draw dependency graph, ensure no cycles |
+| DEP-005 | Task dependencies correctly sequenced | Verify task `dependencies` arrays in sprint YAML |
+
+**Example Audit**:
+```yaml
+dependency_audit:
+  completed: true
+  completed_date: "2026-01-05"
+  auditor: "@peternicholls"
+  
+  checks:
+    - id: "DEP-001"
+      status: "passed"
+      notes: "F006 and F007 specs have complete dependency sections"
+    
+    - id: "DEP-002"
+      status: "passed"
+      notes: "F001-F005 completed in v0.1.0, no blockers"
+    
+    - id: "DEP-003"
+      status: "passed"
+      notes: "No new external deps for F006/F007, only curl (already required)"
+    
+    - id: "DEP-004"
+      status: "passed"
+      notes: "F006 ↛ F007, F007 ↛ F006 (independent features)"
+    
+    - id: "DEP-005"
+      status: "passed"
+      notes: "Task sequence verified: T006-001 → T006-002 → T006-003..."
+  
+  blockers_identified: []
+```
+
+**If blockers found**:
+1. Document blocker in `blockers_identified`
+2. Create resolution plan
+3. Adjust sprint scope if necessary
+4. Re-run audit after resolution
+
+### Step 6: Validate Constitution Compliance
 
 For each feature, identify **gates** from spec:
 
@@ -121,7 +172,7 @@ retrospective:
 
 **Gates must be defined BEFORE sprint starts** (from feature spec).
 
-### Step 6: Commit Sprint Plan
+### Step 7: Commit Sprint Plan
 
 ```bash
 git add dev/sprints/sprint-01.yaml

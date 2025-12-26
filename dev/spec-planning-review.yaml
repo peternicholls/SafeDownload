@@ -1,0 +1,103 @@
+schema_version: "1.0.0"
+title: "Spec & Planning Improvements"
+date: "2025-12-26"
+status: "proposed"
+scope:
+  artifacts:
+    - "dev/roadmap.yaml"
+    - "dev/specs/feature-template.yaml"
+    - "dev/sprints/sprint-template.yaml"
+    - "dev/specs/features/*.yaml"
+    - "dev/sprints/*.yaml"
+  focus:
+    - "schema versioning"
+    - "dependency hygiene"
+    - "requirements-to-test traceability"
+    - "sprint guardrails"
+    - "backfilled spec consistency"
+
+goals:
+  - id: "G-001"
+    description: "Add schema_version to all YAML planning/spec templates and key artifacts."
+  - id: "G-002"
+    description: "Make dependencies explicit and auditable across specs and sprint plans."
+  - id: "G-003"
+    description: "Introduce test ↔ requirement traceability in feature specs."
+  - id: "G-004"
+    description: "Add sprint planning guardrails for dependency checks and spec linkage."
+  - id: "G-005"
+    description: "Standardize backfilled spec annotations and actual test results reporting."
+
+issues:
+  - id: "I-001"
+    priority: "P1"
+    description: "YAML planning/spec artifacts lack schema_version fields."
+    recommendation: "Add schema_version: '1.0.0' to roadmap/spec/sprint templates and propagate to instantiated files."
+
+  - id: "I-002"
+    priority: "P1"
+    description: "Dependencies are not consistently documented or validated across specs and sprint plans."
+    recommendation: "Add a dependency audit checklist and enforce in sprint planning; sync dependencies from specs into sprint features."
+
+  - id: "I-003"
+    priority: "P2"
+    description: "Test ↔ requirement traceability is not explicitly defined in specs."
+    recommendation: "Add stable IDs for acceptance criteria/requirements and reference them in testing sections."
+
+  - id: "I-004"
+    priority: "P2"
+    description: "Sprint templates do not require explicit dependency checks or linkage to spec items."
+    recommendation: "Add a dependency verification checklist and require task-to-spec references."
+
+  - id: "I-005"
+    priority: "P3"
+    description: "Backfilled specs lack a standardized way to record actual test results."
+    recommendation: "Add a backfilled flag and implementation_results section to the template and apply to historical specs."
+
+plan:
+  - id: "T-001"
+    title: "Add schema_version to templates"
+    resolves: "I-001"
+    priority: "P1"
+    touches:
+      - "dev/roadmap.yaml"
+      - "dev/specs/feature-template.yaml"
+      - "dev/sprints/sprint-template.yaml"
+
+  - id: "T-002"
+    title: "Define dependency audit checklist"
+    resolves: "I-002"
+    priority: "P1"
+    touches:
+      - "dev/SPRINT_PLANNING_GUIDE.md"
+      - "dev/sprints/sprint-template.yaml"
+
+  - id: "T-003"
+    title: "Add requirement/test traceability fields"
+    resolves: "I-003"
+    priority: "P2"
+    touches:
+      - "dev/specs/feature-template.yaml"
+
+  - id: "T-004"
+    title: "Add sprint guardrails for dependency validation"
+    resolves: "I-004"
+    priority: "P2"
+    touches:
+      - "dev/sprints/sprint-template.yaml"
+
+  - id: "T-005"
+    title: "Standardize backfilled spec metadata and results"
+    resolves: "I-005"
+    priority: "P3"
+    touches:
+      - "dev/specs/feature-template.yaml"
+      - "dev/specs/features/F001-core-download.yaml"
+      - "dev/specs/features/F002-checksum-verification.yaml"
+      - "dev/specs/features/F003-simple-tui.yaml"
+      - "dev/specs/features/F004-state-persistence.yaml"
+      - "dev/specs/features/F005-batch-downloads.yaml"
+
+notes:
+  - "Keep initial changes minimal and backward-compatible."
+  - "Prefer structured, grep-friendly YAML updates to enable automation."
