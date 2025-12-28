@@ -1,0 +1,413 @@
+# Research Agent Configuration
+# Defines how the speckit.research agent works for this project
+#
+# Schema Version: 1.0.0
+# Created: 2025-12-28
+
+metadata:
+  project_name: "SafeDownload"
+  project_type: "CLI Application"
+  schema_version: "1.0.0"
+  created: "2025-12-28"
+  updated: "2025-12-28"
+
+# =============================================================================
+# FILE PATHS
+# =============================================================================
+# All paths are relative to project root
+# Use forward slashes (/) even on Windows
+
+paths:
+  # Research infrastructure root
+  research_root: "dev/research"
+
+  # Master research files
+  research_plan: "dev/research/research-plan.yaml"
+  research_template: "dev/research/research-template.yaml"
+  decision_log: "dev/research/decision-log.yaml"
+  feedback_integration: "dev/research/feedback-integration.yaml"
+  master_doc: "dev/research/MASTER.md"
+
+  # Research area pattern (use {folder} placeholder)
+  area_folder_pattern: "dev/research/{folder}"
+  area_research_yaml: "dev/research/{folder}/research.yaml"
+  area_findings_md: "dev/research/{folder}/findings.md"
+
+  # Project context documents
+  constitution: ".specify/memory/constitution.md"
+  roadmap: "dev/roadmap.yaml"
+
+  # Integration targets
+  feature_specs: "dev/specs/features"
+  architecture_docs: "dev/architecture"
+  sprint_plans: "dev/sprints"
+
+  # Agent files
+  agent_definition: ".github/agents/speckit.research.agent.md"
+  agent_prompt: ".github/prompts/speckit.research.prompt.md"
+  agent_context: ".specify/context/research-agent-context.yaml"
+  helper_script: ".specify/scripts/bash/research.sh"
+  tool_definitions: ".specify/tools/research-tools.yaml"
+
+# =============================================================================
+# DECISION CRITERIA
+# =============================================================================
+# Weights for scoring options during research
+# Must sum to 100
+
+decision_criteria:
+  weights:
+    constitution_alignment: 25 # Does it align with project principles?
+    performance: 20 # Does it meet performance gates?
+    maintainability: 20 # Easy to maintain long-term?
+    developer_experience: 15 # Good DX for contributors?
+    community_support: 10 # Active community, documentation?
+    dependency_footprint: 10 # Minimal dependencies per constitution?
+
+  scoring:
+    scale: "0-100"
+    pass_threshold: 60 # Minimum viable score
+    recommend_threshold: 75 # Recommended score
+
+# =============================================================================
+# CONSTITUTION PRINCIPLES
+# =============================================================================
+# Map project-specific principles to generic IDs
+# Used for constitution alignment scoring
+
+constitution_principles:
+  - id: "I"
+    name: "Resumable Downloads"
+    description: "Resume as core feature (range headers)"
+    weight: "critical"
+
+  - id: "II"
+    name: "Optional Features"
+    description: "Enhanced features must be optional"
+    weight: "high"
+
+  - id: "III"
+    name: "Single Binary"
+    description: "No runtime dependencies"
+    weight: "high"
+
+  - id: "V"
+    name: "Privacy"
+    description: "No telemetry, analytics"
+    weight: "critical"
+
+  - id: "VI"
+    name: "Structured Output"
+    description: "JSON output flag"
+    weight: "medium"
+
+  - id: "VIII"
+    name: "Minimal Dependencies"
+    description: "Prefer stdlib"
+    weight: "critical"
+
+  - id: "IX"
+    name: "Accessibility"
+    description: "Screen reader support required"
+    weight: "high"
+
+  - id: "X"
+    name: "Security Posture"
+    description: "Defense in depth"
+    weight: "high"
+
+  - id: "XI"
+    name: "Professional UX"
+    description: "High visual standards"
+    weight: "medium"
+
+# =============================================================================
+# PERFORMANCE GATES
+# =============================================================================
+# Quantitative performance requirements
+# Used when evaluating options
+
+performance_gates:
+  tui_startup: "<500ms"
+  list_downloads: "<100ms"
+  resume_calculation: "<50ms"
+  cancel_response: "<200ms"
+
+# =============================================================================
+# RESEARCH METHODOLOGY
+# =============================================================================
+
+methodology:
+  # Confidence levels for answers
+  confidence_levels:
+    - level: "CERTAIN"
+      definition: "100% confident, verified from authoritative source"
+      when_to_use: "Official docs, tested locally, consensus across sources"
+
+    - level: "HIGH"
+      definition: "90%+ confident, strong evidence"
+      when_to_use: "Multiple reliable sources agree, fits known patterns"
+
+    - level: "MEDIUM"
+      definition: "70-90% confident, some uncertainty"
+      when_to_use: "Single good source, or extrapolating from similar cases"
+
+    - level: "LOW"
+      definition: "<70% confident, significant uncertainty"
+      when_to_use: "Limited sources, conflicting information, inference"
+
+  # Source credibility ranking
+  source_ranking:
+    tier_1:
+      - "Official documentation"
+      - "Source code"
+      - "Project maintainer communications"
+
+    tier_2:
+      - "Well-known technical blogs"
+      - "Conference talks by experts"
+      - "Reputable books"
+
+    tier_3:
+      - "Stack Overflow (accepted answers)"
+      - "Community blog posts"
+      - "GitHub issues/discussions"
+
+  # Task types this project uses
+  task_types:
+    - name: "library_evaluation"
+      description: "Evaluate a library/framework for potential use"
+      typical_duration: "2-4 hours"
+
+    - name: "pattern_research"
+      description: "Research implementation patterns or approaches"
+      typical_duration: "1-3 hours"
+
+    - name: "documentation_review"
+      description: "Gather and synthesize documentation"
+      typical_duration: "1-2 hours"
+
+    - name: "benchmark_comparison"
+      description: "Compare performance of different options"
+      typical_duration: "2-3 hours"
+
+# =============================================================================
+# RESEARCH TYPES
+# =============================================================================
+# Taxonomy of research that can be performed
+
+research_types:
+  - type: "library_evaluation"
+    description: "Evaluate external libraries for use"
+    deliverables:
+      - "Comparison matrix"
+      - "Scoring against criteria"
+      - "Recommendation with rationale"
+
+  - type: "pattern_research"
+    description: "Research implementation patterns"
+    deliverables:
+      - "Pattern documentation"
+      - "Code examples"
+      - "Pros/cons analysis"
+
+  - type: "architecture_design"
+    description: "Research architectural approaches"
+    deliverables:
+      - "Architecture comparison"
+      - "Trade-off analysis"
+      - "Decision recommendation"
+
+  - type: "tool_selection"
+    description: "Select development tools"
+    deliverables:
+      - "Tool comparison"
+      - "Integration requirements"
+      - "Recommendation"
+
+  - type: "ecosystem_research"
+    description: "Research ecosystem compatibility"
+    deliverables:
+      - "Ecosystem analysis"
+      - "Integration points"
+      - "Migration paths"
+
+# =============================================================================
+# INTEGRATION WITH SPECKIT AGENTS
+# =============================================================================
+
+integration:
+  # Agents that can be called after research completes
+  handoff_agents:
+    - agent: "speckit.plan"
+      when: "Research findings inform technical approach"
+      data_passed: "Decisions, library choices, patterns"
+
+    - agent: "speckit.specify"
+      when: "Research updates feature requirements"
+      data_passed: "Implementation constraints, technical requirements"
+
+    - agent: "speckit.analyze"
+      when: "Need to validate research completeness"
+      data_passed: "Research status, coverage analysis"
+
+  # Where research findings are integrated
+  update_targets:
+    - type: "feature_spec"
+      pattern: "{feature_specs}/F{id}.yaml"
+      sections:
+        - "implementation.packages"
+        - "implementation.dependencies"
+        - "technical_notes"
+
+    - type: "architecture"
+      pattern: "{architecture_docs}/*.md"
+      sections:
+        - "Technology Stack"
+        - "Design Decisions"
+        - "Trade-offs"
+
+    - type: "decision"
+      pattern: "{decision_log}"
+      sections:
+        - "decisions[]"
+
+    - type: "sprint"
+      pattern: "{sprint_plans}/sprint-*.yaml"
+      sections:
+        - "tasks[].blockers"
+        - "research_complete"
+
+# =============================================================================
+# VERSION MAPPING
+# =============================================================================
+# Maps research requirements to project versions
+
+version_research_map:
+  "0.2.0":
+    name: "Shield"
+    required_research: ["R04"]
+    description: "Accessibility research needed for basic TUI"
+
+  "1.0.0":
+    name: "Phoenix"
+    required_research: ["R01", "R03", "R05", "R10"]
+    description: "Go core migration research"
+
+  "1.1.0":
+    name: "Bubble"
+    required_research: ["R02"]
+    description: "Bubble Tea TUI framework research"
+
+  "1.2.0":
+    name: "Velocity"
+    required_research: ["R06", "R09"]
+    description: "GPG and plugin system research"
+
+  "1.3.0":
+    name: "Ecosystem"
+    required_research: ["R07"]
+    description: "Package manager research"
+
+  "2.0.0":
+    name: "Horizon"
+    required_research: ["R08"]
+    description: "REST API research"
+
+# =============================================================================
+# AGENT BEHAVIOR
+# =============================================================================
+
+behavior:
+  # What the agent MUST do
+  requirements:
+    - "Always check constitution alignment before finalizing decisions"
+    - "Always cite sources with URLs"
+    - "Always record confidence levels for answers"
+    - "Always update all affected status files"
+    - "Always present research brief before starting"
+    - "Always offer next steps after completion"
+
+  # What the agent MUST NOT do
+  prohibitions:
+    - "Do not recommend options that violate constitution principles"
+    - "Do not skip questions - mark as LOW confidence if uncertain"
+    - "Do not proceed without user confirmation (unless --auto flag)"
+    - "Do not modify files outside research directory without noting"
+
+  # Preferences
+  preferences:
+    - "Prefer official documentation over community sources"
+    - "Prefer stdlib over external dependencies"
+    - "Prefer well-maintained libraries (commits in last 6 months)"
+    - "Prefer MIT/BSD/Apache licenses"
+    - "Prefer libraries with good documentation"
+
+  # Error handling strategies
+  error_handling:
+    question_unanswerable:
+      action: "Record as LOW confidence with explanation"
+      next_step: "Add to 'Open Questions' in findings.md"
+
+    library_unmaintained:
+      threshold: "No commits in 12 months"
+      action: "Flag as risk in evaluation"
+      recommendation: "Consider alternatives or forking"
+
+    conflicting_sources:
+      action: "Document all perspectives"
+      next_step: "Recommend local testing to verify"
+
+# =============================================================================
+# OUTPUT FORMATS
+# =============================================================================
+# Templates for research outputs
+
+output_formats:
+  library_comparison:
+    format: "markdown_table"
+    columns:
+      - "Aspect"
+      - "Library A"
+      - "Library B"
+      - "Library C"
+    rows:
+      - "Stars"
+      - "License"
+      - "Last Update"
+      - "Dependencies"
+      - "Feature Support"
+      - "Learning Curve"
+      - "Score"
+
+  question_answer:
+    format: "markdown"
+    sections:
+      - "Question"
+      - "Answer"
+      - "Confidence"
+      - "Sources"
+      - "Caveats"
+
+  decision_summary:
+    format: "yaml"
+    fields:
+      - "id"
+      - "title"
+      - "category"
+      - "selection"
+      - "rationale"
+      - "trade_offs_accepted"
+      - "fallback_plan"
+
+# =============================================================================
+# PROJECT-SPECIFIC NOTES
+# =============================================================================
+
+notes:
+  - "This is a CLI application built in Go"
+  - "Focus on minimal dependencies and performance"
+  - "Constitution compliance is critical for all decisions"
+  - "Accessibility is a first-class requirement"
+  - "Research should inform sprint planning"
+  - "All decisions require approval before implementation"
