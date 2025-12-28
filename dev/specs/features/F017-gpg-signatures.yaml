@@ -105,7 +105,9 @@ user_stories:
     independent_test: |
       1. Download with --verify-sig
       2. Check safedownload.log
-      3. Verify: Entry like "GPG: Verified app.tar.gz with key ABC123 (signer: Publisher <pub@example.com>) at 2026-01-15T10:30:00Z"
+      3. Verify: >
+        Entry like "GPG: Verified app.tar.gz with key ABC123 (signer:
+        Publisher <pub@example.com>) at 2026-01-15T10:30:00Z"
 
     definition_of_done:
       - "Verification success/failure logged"

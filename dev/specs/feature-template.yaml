@@ -311,24 +311,24 @@ implementation_results:
     by_component: []
       # - component: "pkg/example"
       #   coverage: "85%"
-  
+
   test_results:
     date_run: "YYYY-MM-DD"
     tests_passed: 0
     tests_failed: 0
     tests_skipped: 0
     notes: ""
-  
+
   performance_measurements:
     # - metric: "Startup time"
     #   target: "<500ms"
     #   actual: "287ms"
     #   status: "passed"
-  
+
   lessons_learned:
     # - "Discovered edge case X that wasn't in original design"
     # - "Had to refactor Y to support Z"
-  
+
   deviations_from_spec:
     # - area: "CLI flags"
     #   spec: "--foo flag with boolean value"

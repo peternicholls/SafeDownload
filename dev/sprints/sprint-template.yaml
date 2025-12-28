@@ -33,33 +33,33 @@ dependency_audit:
   completed: false # Set to true when all checks pass
   completed_date: "" # YYYY-MM-DD
   auditor: "" # GitHub username of person who performed audit
-  
+
   checks:
     - id: "DEP-001"
       description: "All feature dependencies are documented in spec files"
       status: "not_checked" # not_checked | passed | failed | n/a
       notes: ""
-    
+
     - id: "DEP-002"
       description: "Prerequisite features are completed or in current sprint"
       status: "not_checked"
       notes: ""
-    
+
     - id: "DEP-003"
       description: "External dependencies are available and licensed correctly"
       status: "not_checked"
       notes: ""
-    
+
     - id: "DEP-004"
       description: "No circular dependencies between sprint features"
       status: "not_checked"
       notes: ""
-    
+
     - id: "DEP-005"
       description: "Task dependencies within sprint are correctly sequenced"
       status: "not_checked"
       notes: ""
-  
+
   blockers_identified: [] # List any dependency blockers found
   resolution_plan: "" # How blockers will be resolved
 

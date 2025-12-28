@@ -184,73 +184,73 @@ actual_implementation:
   file: "archive/2025-12-24/safedownload"
   manifest_parsing: "parse_manifest() function"
   parallel_execution: "process_queue() with MAX_PARALLEL_DOWNLOADS check"
-  
+
   manifest_format:
     description: "Space-separated format: URL [output] [sha_type:sha]"
     parsing: "IFS read with automatic field splitting"
     comments: "Lines starting with # ignored"
     empty_lines: "Skipped automatically"
-    
+
     examples:
       - "https://example.com/file.zip"
       - "https://example.com/file2.tar.gz output.tar.gz"
       - "https://example.com/file3.bin file3.bin sha256:abc123..."
-  
+
   parallel_configuration:
     default_parallelism: 3
     variable: "MAX_PARALLEL_DOWNLOADS"
     cli_flag: "-p, --parallel N"
     tui_command: "/parallel N (not verified in code)"
-    
+
     enforcement:
       - "Active download count tracked"
       - "Comparison: if [[ $active -ge $MAX_PARALLEL_DOWNLOADS ]]"
       - "Queue processing blocks until slot available"
-  
+
   cli_integration:
     manifest_flag: "-m, --manifest FILE"
     parallel_flag: "-p, --parallel N"
     example: "safedownload -m urls.txt -p 5"
     tui_command: "/manifest FILE"
-  
+
   performance:
     - scenario: "10 files, 100MB each, 100Mbps network"
       parallelism: 3
       estimated_time: "~30-35 seconds"
       throughput: "~30-33 MB/s aggregate"
       notes: "Network-limited, parallelism helps with latency"
-    
+
     - scenario: "10 files, 100MB each, 100Mbps network"
       parallelism: 1
       estimated_time: "~80-85 seconds"
       throughput: "~12 MB/s"
       notes: "Sequential processing, no parallelism benefit"
-    
+
     - scenario: "10 files, 100MB each, 100Mbps network"
       parallelism: 5
       estimated_time: "~25-28 seconds"
       throughput: "~35-40 MB/s aggregate"
       notes: "Diminishing returns beyond 3-5 for typical networks"
-  
+
   implementation_notes:
     manifest_parsing:
       - "Uses Bash IFS read for efficient parsing"
       - "Automatic filename extraction from URL if not specified"
       - "SHA specification parsed: sha256:hash format"
       - "Comments and empty lines filtered out"
-    
+
     parallel_execution:
       - "Queue-based with active download tracking"
       - "Independent download processes (no cascading failures)"
       - "Failed downloads don't block others"
       - "Background process management via PIDs"
-    
+
     edge_cases:
       - "Missing manifest file: Error with clear message"
       - "Invalid URL in manifest: Skip with warning, continue"
       - "Mixed success/failure: Partial completion reported"
       - "Manifest format errors: Line-by-line error reporting"
-    
+
     parallelism_tuning:
       - "Default of 3 is conservative for typical home networks"
       - "5-7 optimal for fast connections (>100Mbps)"
@@ -274,7 +274,7 @@ notes: |
   https://example.com/file2.tar.gz myfile.tar.gz
   https://example.com/file3.bin file3.bin sha256:abc123...
   ```
-  
+
   Implementation validated against archive/2025-12-24/safedownload.
   Manifest parsing: parse_manifest() function
   Parallel control: MAX_PARALLEL_DOWNLOADS=3 (default)
@@ -291,14 +291,14 @@ implementation_results:
         coverage: "Manual verification"
       - component: "Parallel execution"
         coverage: "Manual verification"
-  
+
   test_results:
     date_run: "2025-12-26"
     tests_passed: 4
     tests_failed: 0
     tests_skipped: 0
     notes: "Manifest parsing with URLs, output names, checksums; parallel execution verified"
-  
+
   performance_measurements:
     - metric: "10 files, 100MB each, parallelism=3"
       target: "Network-limited aggregate throughput"
@@ -308,11 +308,11 @@ implementation_results:
       target: ">50% reduction in total time"
       actual: "~60% reduction"
       status: "passed"
-  
+
   lessons_learned:
     - "Default parallelism of 3 is good balance for typical home networks"
     - "IFS read provides efficient manifest parsing"
     - "Independent download processes prevent cascading failures"
-  
+
   deviations_from_spec:
     # None - this was initial implementation, spec written afterward

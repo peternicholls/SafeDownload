@@ -106,7 +106,9 @@ user_stories:
     independent_test: |
       1. Manually edit state.json: set schema_version to "99.0.0"
       2. Run: safedownload
-      3. Verify: Error message like "state file schema v99.0.0 is newer than app supports (v1.0.0). Upgrade SafeDownload."
+      3. Verify: >
+        Error message like "state file schema v99.0.0 is newer than app supports
+        (v1.0.0). Upgrade SafeDownload."
       4. Verify: state.json unchanged (not corrupted by read attempt)
 
     definition_of_done:

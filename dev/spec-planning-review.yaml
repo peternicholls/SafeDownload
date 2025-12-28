@@ -36,8 +36,12 @@ issues:
 
   - id: "I-002"
     priority: "P1"
-    description: "Dependencies are not consistently documented or validated across specs and sprint plans."
-    recommendation: "Add a dependency audit checklist and enforce in sprint planning; sync dependencies from specs into sprint features."
+    description: >
+      Dependencies are not consistently documented or validated across specs
+      and sprint plans.
+    recommendation: >
+      Add a dependency audit checklist and enforce in sprint planning; sync
+      dependencies from specs into sprint features.
 
   - id: "I-003"
     priority: "P2"
@@ -52,7 +56,9 @@ issues:
   - id: "I-005"
     priority: "P3"
     description: "Backfilled specs lack a standardized way to record actual test results."
-    recommendation: "Add a backfilled flag and implementation_results section to the template and apply to historical specs."
+    recommendation: >
+      Add a backfilled flag and implementation_results section to the template
+      and apply to historical specs.
 
 plan:
   - id: "T-001"

@@ -150,7 +150,7 @@ testing:
     - name: "Resume detection"
       status: "passing"
       location: "archive/2025-12-24/tests/test.sh"
-  
+
   test_results:
     date_run: "2025-12-26"
     legacy_tests_passed: 7
@@ -161,30 +161,30 @@ actual_implementation:
   file: "archive/2025-12-24/safedownload"
   lines_of_code: 1726
   version: "1.0.0"
-  
+
   configuration:
     retry_count: 5
     retry_delay: "3 seconds"
     chunk_size: "10MB (10485760 bytes)"
     curl_flags: "--retry 5 --retry-delay 3"
-  
+
   implementation_notes:
     resume_mechanism:
       - "Uses curl's -C flag for automatic resume from byte position"
       - ".part files created during download"
       - "Resume position calculated from .part file size"
       - "curl automatically handles Range headers"
-    
+
     edge_cases_handled:
       - "Server without Range support: Falls back to full download"
       - "Corrupt .part files: Restart from beginning"
       - "Network interruption: Automatic retry with exponential backoff"
-    
+
     performance:
       - metric: "Download speed"
         baseline: "Network-limited (tested up to 100 Mbps)"
         notes: "No artificial throttling, curl handles bandwidth efficiently"
-      
+
       - metric: "Resume calculation"
         baseline: "<10ms for typical files"
         notes: "Simple file size check via stat"
@@ -197,7 +197,7 @@ documentation:
 notes: |
   This feature was implemented as part of the initial v0.1.0 release.
   Spec backfilled for documentation completeness.
-  
+
   Implementation validated against archive/2025-12-24/safedownload.
   Test results from archive/2025-12-24/tests/test.sh (7/7 legacy tests passing).
 
@@ -210,14 +210,14 @@ implementation_results:
     by_component:
       - component: "Core download"
         coverage: "Manual tests passing"
-  
+
   test_results:
     date_run: "2025-12-26"
     tests_passed: 7
     tests_failed: 0
     tests_skipped: 0
     notes: "Legacy download.sh tests from archive/2025-12-24/tests/test.sh"
-  
+
   performance_measurements:
     - metric: "Download speed"
       target: "Network-limited"
@@ -227,10 +227,10 @@ implementation_results:
       target: "<50ms"
       actual: "<10ms"
       status: "passed"
-  
+
   lessons_learned:
     - "curl's -C flag provides robust resume support with minimal code"
     - ".part file approach simple and effective for tracking incomplete downloads"
-  
+
   deviations_from_spec:
     # None - this was initial implementation, spec written afterward
