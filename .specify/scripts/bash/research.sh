@@ -69,10 +69,12 @@ parse_args() {
                 shift 2
                 ;;
             --status)
+                # shellcheck disable=SC2034
                 NEW_STATUS="$2"
                 shift 2
                 ;;
             --hours)
+                # shellcheck disable=SC2034
                 ACTUAL_HOURS="$2"
                 shift 2
                 ;;
