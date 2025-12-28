@@ -7,7 +7,7 @@ bundle:
   schema_version: "1.0.0"
   created: "2025-12-28"
   description: "Project-agnostic research agent for SpecKit framework"
-  
+
 metadata:
   author: "SafeDownload Project"
   license: "Same as SafeDownload"
@@ -25,7 +25,7 @@ files:
       destination: ".github/agents/speckit.research.agent.md"
       description: "AI agent definition"
       required: true
-  
+
   templates:
     - path: "files/templates/research-template.yaml"
       destination: ".specify/templates/research-template.yaml"
@@ -35,7 +35,7 @@ files:
       destination: ".specify/templates/research-feedback-template.md"
       description: "Integration feedback template"
       required: true
-  
+
   scripts:
     - path: "files/scripts/research.sh"
       destination: ".specify/scripts/bash/research.sh"
@@ -47,7 +47,7 @@ files:
       description: "Prerequisites validation script"
       required: true
       executable: true
-  
+
   documentation:
     - path: "files/docs/research-framework.md"
       destination: ".specify/docs/research-framework.md"
@@ -61,7 +61,7 @@ files:
       destination: ".specify/docs/agent-integration.md"
       description: "Integration guide"
       required: true
-  
+
   examples:
     - path: "files/examples/default.yaml"
       destination: ".specify/examples/research-configs/default.yaml"
@@ -79,7 +79,7 @@ files:
       destination: ".specify/examples/research-configs/infrastructure.yaml"
       description: "Infrastructure configuration"
       required: true
-  
+
   context:
     - path: "files/context/research-agent-context.yaml"
       destination: ".specify/context/research-agent-context.yaml"
@@ -94,7 +94,7 @@ installation:
     - name: "Interactive"
       command: "./install.sh --auto --project-type web-app"
       description: "Non-interactive with project type"
-  
+
   post_install:
     - step: "Customize configuration"
       file: ".specify/config/research.yaml"
