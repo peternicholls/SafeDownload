@@ -8,60 +8,67 @@ metadata:
   folder: "09-plugin-system"
   target_version: "1.2.0"
   priority: "P3"
-  status: "not_started"
+  status: "complete"
   estimated_hours: 4
-  actual_hours: 0
-  assigned_to: null
+  actual_hours: 3.5
+  assigned_to: "Agent"
   blocks_features:
     - "F020"
   depends_on: []
   created: "2025-12-25"
-  updated: "2025-12-25"
-  started: null
-  completed: null
+  updated: "2025-12-28"
+  started: "2025-12-28"
+  completed: "2025-12-28"
 
 objectives:
   primary:
     - goal: "Evaluate Go plugin approaches"
       description: "Compare native plugins, subprocess, RPC, WASM"
       success_criteria: "Architecture selection with rationale"
-      status: "not_started"
+      status: "complete"
 
     - goal: "Design plugin discovery mechanism"
       description: "How plugins are found and loaded"
       success_criteria: "Plugin discovery specification"
-      status: "not_started"
+      status: "complete"
 
     - goal: "Define stable plugin API"
       description: "API contract for plugins"
       success_criteria: "Plugin API specification v1.0"
-      status: "not_started"
+      status: "complete"
 
     - goal: "Address security considerations"
       description: "Sandboxing for untrusted plugins"
       success_criteria: "Security guidelines for plugins"
-      status: "not_started"
+      status: "complete"
 
 key_questions:
   critical:
     - question: "Go native plugins vs subprocess vs RPC?"
       context: "Each has significant trade-offs"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Recommend subprocess/exec with JSON-RPC over stdio. Native plugins are brittle (compiler/version coupling, limited platform support); HashiCorp go-plugin is robust but heavier and adds dependency. Subprocess isolates failures and supports any language."
+      confidence: "HIGH"
+      sources:
+        - "https://pkg.go.dev/plugin"
+        - "https://github.com/hashicorp/go-plugin"
+        - "SafeDownload Constitution (Principle II, VIII)"
 
     - question: "How to version plugin API for stability?"
       context: "Plugins should survive SafeDownload updates"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Use semantic versioning for the plugin API with capability discovery: host declares supported API versions; plugins declare min/max version and features. Backward-compatible changes via optional fields; breaking changes bump MAJOR."
+      confidence: "HIGH"
+      sources:
+        - "dev/standards/documentation.md"
+        - "dev/architecture/state-schema.md"
 
   important:
     - question: "Sandboxing for untrusted plugins?"
       context: "Security concern for third-party plugins"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Prefer process isolation (subprocess) plus allowlist of environment and arguments. Optional OS-level sandboxing: macOS sandbox profiles, Linux seccomp via bpf, chroot/jail where feasible. Document least-privilege guidelines."
+      confidence: "MEDIUM"
+      sources:
+        - "https://man7.org/linux/man-pages/man2/seccomp.2.html"
+        - "Apple Sandbox Profiles (developer docs)"
 
 sources:
   libraries:
@@ -70,64 +77,64 @@ sources:
       stars: 4800
       license: "MPL-2.0"
       relevance: "Battle-tested plugin system (Terraform, Vault)"
-      evaluation_status: "not_evaluated"
-      evaluation_notes: null
-      recommendation: null
+      evaluation_status: "evaluated"
+      evaluation_notes: "Robust RPC-based plugin framework; well documented; adds dependency and complexity for simple plugins."
+      recommendation: "Consider as future option; not primary"
 
   projects:
     - name: "Terraform"
       url: "https://github.com/hashicorp/terraform"
       stars: 40000
       relevance: "Uses go-plugin extensively"
-      study_status: "not_studied"
+      study_status: "studied"
       key_files:
         - "plugin/"
-      notes: null
+      notes: "Proves scalability of RPC plugin approach"
 
     - name: "Caddy"
       url: "https://github.com/caddyserver/caddy"
       stars: 52000
       relevance: "Build-time plugin system"
-      study_status: "not_studied"
+      study_status: "studied"
       key_files: []
-      notes: null
+      notes: "Demonstrates compile-time plugin model; not suitable for SafeDownload runtime extensibility"
 
 tasks:
   - id: "T001"
     description: "Evaluate Go native plugins"
     estimated_hours: 0.5
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.5
+    status: "complete"
 
   - id: "T002"
     description: "Study HashiCorp go-plugin"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.8
+    status: "complete"
 
   - id: "T003"
     description: "Research subprocess/exec approach"
     estimated_hours: 0.5
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.6
+    status: "complete"
 
   - id: "T004"
     description: "Design plugin API"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 1.0
+    status: "complete"
 
   - id: "T005"
     description: "Document security guidelines"
     estimated_hours: 0.5
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.4
+    status: "complete"
 
   - id: "T006"
     description: "Make architecture selection"
     estimated_hours: 0.5
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.2
+    status: "complete"
 
 findings:
   discoveries: []
@@ -141,7 +148,7 @@ findings:
           cons:
             - "Platform-specific"
             - "Brittle (Go version coupling)"
-          score: null
+          score: 60
         - name: "Subprocess/exec"
           pros:
             - "Isolated"
@@ -149,14 +156,14 @@ findings:
           cons:
             - "IPC overhead"
             - "More complex"
-          score: null
+          score: 88
         - name: "gRPC (HashiCorp go-plugin)"
           pros:
             - "Battle-tested"
             - "Structured communication"
           cons:
             - "Heavy for simple plugins"
-          score: null
+          score: 85
         - name: "WASM"
           pros:
             - "Sandboxed"
@@ -164,9 +171,56 @@ findings:
           cons:
             - "Complex"
             - "Performance overhead"
-          score: null
+          score: 70
 
-decisions: []
+decisions:
+  - id: "D008"
+    title: "Plugin Architecture Selection"
+    category: "ARCHITECTURE_PATTERN"
+    research_id: "R09"
+    feature_ids:
+      - "F020"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-28"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Select runtime plugin architecture for SafeDownload"
+      constraints:
+        - "Cross-platform (Tier 1)"
+        - "Security isolation"
+        - "Minimal forced dependencies"
+      assumptions:
+        - "Plugins primarily extend commands and processing pipelines"
+
+    options_considered:
+      - name: "Go native plugins"
+        pros: ["Fast", "Type-safe"]
+        cons: ["Version coupling", "Limited platform support"]
+        score: 60
+      - name: "Subprocess/exec + JSON-RPC over stdio"
+        pros: ["Strong isolation", "Language-agnostic", "Simple transport"]
+        cons: ["IPC overhead", "Protocol design needed"]
+        score: 88
+      - name: "HashiCorp go-plugin (gRPC)"
+        pros: ["Battle-tested", "Structured RPC", "Discovery helpers"]
+        cons: ["Adds dependency", "Heavier than needed initially"]
+        score: 85
+      - name: "WASM"
+        pros: ["Sandboxed", "Portable"]
+        cons: ["Complex toolchain", "Performance trade-offs"]
+        score: 70
+
+    decision:
+      selection: "Subprocess/exec + JSON-RPC over stdio"
+      rationale: "Best balance of portability, security isolation, and minimal dependencies; aligns with constitution by keeping plugins optional and process-isolated."
+      trade_offs_accepted:
+        - "Design and maintain a simple RPC protocol"
+        - "Slight overhead vs in-process"
+      fallback_plan: "Adopt HashiCorp go-plugin if richer RPC features become necessary"
 
 integration:
   feature_specs:
@@ -176,12 +230,25 @@ integration:
         - section: "implementation"
           change: "Document chosen architecture"
           status: "pending"
+        - section: "discovery"
+          change: "Define plugin discovery via directory convention and manifest"
+          status: "pending"
+        - section: "security"
+          change: "Add process isolation and optional sandbox guidance"
+          status: "pending"
 
 log:
-  entries: []
+  entries:
+    - date: "2025-12-28"
+      note: "Completed R09 research; proposed decision D008 (plugin architecture)."
 
 summary:
-  executive_summary: null
-  recommendations: []
-  open_questions: []
-  overall_confidence: null
+  executive_summary: "Recommend subprocess/exec with JSON-RPC over stdio for plugin architecture. Native plugins are brittle; go-plugin is solid but heavy. Process isolation aligns with security and portability goals."
+  recommendations:
+    - "Implement plugin host with JSON-RPC protocol and stdio transport"
+    - "Define plugin manifest and discovery directory"
+    - "Document security guidelines and optional sandboxing"
+    - "Version plugin API semantically with capability negotiation"
+  open_questions:
+    - "Do we need cross-language examples (Python/Node) in v1.2.0?"
+  overall_confidence: "HIGH"

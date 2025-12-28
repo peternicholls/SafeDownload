@@ -8,10 +8,10 @@ metadata:
   folder: "07-package-managers"
   target_version: "1.3.0"
   priority: "P2"
-  status: "not_started"
+  status: "in_progress"
   estimated_hours: 5
-  actual_hours: 0
-  assigned_to: null
+  actual_hours: 0.5
+  assigned_to: "Agent"
   blocks_features:
     - "F021"
     - "F022"
@@ -20,8 +20,8 @@ metadata:
   depends_on:
     - "R10" # Cross-platform distribution
   created: "2025-12-25"
-  updated: "2025-12-25"
-  started: null
+  updated: "2025-12-28"
+  started: "2025-12-28"
   completed: null
 
 objectives:
@@ -50,22 +50,33 @@ key_questions:
   critical:
     - question: "Self-hosted apt/yum repo vs GitHub Releases only?"
       context: "Trade-off between user convenience and maintenance burden"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Start with GitHub Releases + Homebrew tap; provide .deb/.rpm download via install script (dpkg -i / rpm -Uvh). Defer self-hosted apt/yum repos to a later minor release or use a hosted service (Cloudsmith/PackageCloud) if demand justifies the maintenance."
+      confidence: "HIGH"
+      sources:
+        - "https://docs.brew.sh/Taps"
+        - "https://goreleaser.com/intro/"
+        - "https://goreleaser.com/customization/nfpm/"
+        - "https://www.debian.org/doc/manuals/debian-faq/pkg-basics.en.html"
+        - "https://rpm-software-management.github.io/rpm/manual/"
 
     - question: "Goreleaser for all formats or separate tooling?"
       context: "goreleaser has native support for some formats"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Use goreleaser with nfpm for .deb/.rpm and goreleaser's brews for Homebrew tap publishing. Separate tooling (fpm/reprepro/createrepo) only if we hit edge cases not supported by nfpm or need complex repo hosting."
+      confidence: "HIGH"
+      sources:
+        - "https://goreleaser.com/customization/brew/"
+        - "https://github.com/goreleaser/nfpm"
+        - "https://github.com/jordansissel/fpm"
 
   important:
     - question: "Package signing keys (GPG)?"
       context: "Packages should be signed for security"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Generate a dedicated SafeDownload GPG key pair; store the private key in CI secrets. Use nfpm signing for .deb/.rpm (RPM package signatures; Debian package signing via inline ar member or detached). Sign repository metadata if/when we host apt/yum repos. Homebrew formulas include SHA256 of the release tarball; optionally publish a signed SHA256SUMS file."
+      confidence: "MEDIUM"
+      sources:
+        - "https://goreleaser.com/customization/nfpm/#signing"
+        - "https://www.debian.org/doc/manuals/developers-reference/pkgs.en.html#archive-signatures"
+        - "https://rpm-packaging-guide.github.io/"
 
 sources:
   documentation:
@@ -73,15 +84,15 @@ sources:
       url: "https://docs.brew.sh/Formula-Cookbook"
       type: "official"
       relevance: "Homebrew formula creation"
-      read_status: "not_read"
-      notes: null
+      read_status: "read"
+      notes: "Formula structure, resource blocks, test do, bottle syntax"
 
     - name: "goreleaser documentation"
       url: "https://goreleaser.com/intro/"
       type: "official"
       relevance: "Release automation"
-      read_status: "not_read"
-      notes: null
+      read_status: "read"
+      notes: "brews tap publishing and nfpm integration"
 
   libraries:
     - name: "fpm"
@@ -89,55 +100,82 @@ sources:
       stars: 11000
       license: "MIT"
       relevance: "Multi-format package builder"
-      evaluation_status: "not_evaluated"
-      evaluation_notes: null
-      recommendation: null
+      evaluation_status: "evaluated"
+      evaluation_notes: "Powerful CLI for building packages; good fallback if goreleaser/nfpm lacks a needed feature or custom scripts required for complex packaging"
+      recommendation: "Fallback only"
 
     - name: "nfpm"
       url: "https://github.com/goreleaser/nfpm"
       stars: 2000
       license: "MIT"
       relevance: "goreleaser's native package builder"
-      evaluation_status: "not_evaluated"
-      evaluation_notes: null
-      recommendation: null
+      evaluation_status: "evaluated"
+      evaluation_notes: "Generates .deb and .rpm directly from simple YAML config; integrates seamlessly with goreleaser; supports signing"
+      recommendation: "Primary tool via goreleaser"
 
 tasks:
   - id: "T001"
     description: "Research Homebrew tap creation"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.25
+    status: "in_progress"
 
   - id: "T002"
     description: "Research Debian packaging"
     estimated_hours: 1.5
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.1
+    status: "in_progress"
 
   - id: "T003"
     description: "Research RPM packaging"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.1
+    status: "in_progress"
 
   - id: "T004"
     description: "Design goreleaser configuration"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.05
+    status: "in_progress"
 
   - id: "T005"
     description: "Document package signing approach"
     estimated_hours: 0.5
     actual_hours: 0
-    status: "not_started"
+    status: "in_progress"
 
 findings:
-  discoveries: []
-  comparisons: []
+  discoveries:
+    - title: "Goreleaser brews publish tap formulas from CI"
+      details: "Supports pushing to a dedicated tap repo and auto-updating SHA256"
+      sources:
+        - "https://goreleaser.com/customization/brew/"
+    - title: "nfpm supports signed deb/rpm packages"
+      details: "Signing keys can be provided via environment variables in CI"
+      sources:
+        - "https://goreleaser.com/customization/nfpm/#signing"
+    - title: "Homebrew formula tests can be simple run commands"
+      details: "Formula `test do` block can invoke `--version` for validation"
+      sources:
+        - "https://docs.brew.sh/Formula-Cookbook"
+  comparisons:
+    - aspect: "Tooling approach"
+      options:
+        - name: "goreleaser + nfpm"
+          pros: ["Unified config", "CI-friendly", "Signing support", "Brew tap integration"]
+          cons: ["Limited highly custom packaging logic"]
+          score: 88
+        - name: "fpm + custom repo tooling"
+          pros: ["Very flexible", "Mature"]
+          cons: ["More scripts to maintain", "Separate pipelines"]
+          score: 72
 
-decisions: []
+decisions:
+  - id: "D00R07"
+    title: "Distribution tooling selection"
+    status: "PROPOSED"
+    category: "IMPLEMENTATION_APPROACH"
+    summary: "Use goreleaser + nfpm for package generation; publish brew tap via goreleaser; ship .deb/.rpm via GitHub Releases initially; defer self-hosted repos"
 
 integration:
   feature_specs:
@@ -147,12 +185,33 @@ integration:
         - section: "implementation"
           change: "Document tap structure"
           status: "pending"
+    - feature_id: "F022"
+      feature_name: "Debian Packages"
+      updates_required:
+        - section: "implementation"
+          change: "nfpm config and signing"
+          status: "pending"
+    - feature_id: "F023"
+      feature_name: "RPM Packages"
+      updates_required:
+        - section: "implementation"
+          change: "nfpm config and signing"
+          status: "pending"
 
 log:
-  entries: []
+  entries:
+    - date: "2025-12-28"
+      author: "Agent"
+      message: "Initialized R07, evaluated goreleaser/nfpm, drafted answers to key questions"
 
 summary:
-  executive_summary: null
-  recommendations: []
-  open_questions: []
-  overall_confidence: null
+  executive_summary: "Adopt goreleaser + nfpm to generate and publish Homebrew tap and .deb/.rpm artifacts. Begin with GitHub Releases distribution and signed packages; consider hosted apt/yum repositories later based on user demand. This balances user convenience with maintenance complexity and aligns with minimal-dependency principles."
+  recommendations:
+    - "Create dedicated Homebrew tap repo (peternicholls/homebrew-safedownload)"
+    - "Add goreleaser brews config targeting the tap"
+    - "Add nfpm sections for deb/rpm with signing setup in CI"
+    - "Provide install script paths for dpkg/rpm installation"
+  open_questions:
+    - "Hosted repo service vs self-hosted when moving beyond GitHub Releases"
+    - "Key rotation policy for signing keys"
+  overall_confidence: "HIGH"

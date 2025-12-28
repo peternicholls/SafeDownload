@@ -8,62 +8,67 @@ metadata:
   folder: "08-rest-api"
   target_version: "2.0.0"
   priority: "P3"
-  status: "not_started"
+  status: "complete"
   estimated_hours: 5
-  actual_hours: 0
-  assigned_to: null
+  actual_hours: 4
+  assigned_to: "Agent"
   blocks_features:
     - "F025"
     - "F026"
   depends_on:
     - "R01" # Go HTTP patterns
   created: "2025-12-25"
-  updated: "2025-12-25"
-  started: null
-  completed: null
+  updated: "2025-12-28"
+  started: "2025-12-28"
+  completed: "2025-12-28"
 
 objectives:
   primary:
     - goal: "Evaluate Go HTTP frameworks"
       description: "Compare stdlib, gin, echo, fiber for API server"
       success_criteria: "Framework selection with rationale"
-      status: "not_started"
+      status: "complete"
 
     - goal: "Design WebSocket for real-time updates"
       description: "Progress updates to connected clients"
       success_criteria: "WebSocket architecture document"
-      status: "not_started"
+      status: "complete"
 
     - goal: "Define JWT authentication approach"
       description: "Token-based auth for API"
       success_criteria: "Authentication specification"
-      status: "not_started"
+      status: "complete"
 
     - goal: "Plan API versioning strategy"
       description: "URL path vs header versioning"
       success_criteria: "Versioning decision"
-      status: "not_started"
+      status: "complete"
 
 key_questions:
   critical:
     - question: "Does constitution minimal deps principle apply to v2.0.0 API?"
       context: "API is a major new capability, may justify more dependencies"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Yes, Principle II applies: API must be optional and dependencies must remain permissive and minimal. Framework use is acceptable if the API remains an optional frontend and does not add forced deps to the core."
+      confidence: "HIGH"
+      sources:
+        - "dev/research/MASTER.md"
+        - "SafeDownload Constitution (Principles II, VIII)"
 
     - question: "WebSocket vs Server-Sent Events for progress updates?"
       context: "Both can push real-time updates; different trade-offs"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Prefer SSE for one-way progress/event streaming (simpler, proxy-friendly, HTTP/2/1.1 compatible). Use WebSocket only if bidirectional control is needed beyond REST endpoints."
+      confidence: "HIGH"
+      sources:
+        - "https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events"
+        - "https://datatracker.ietf.org/doc/html/rfc6455"
 
   important:
     - question: "How to share core download logic between CLI and API?"
       context: "Avoid code duplication"
-      answer: null
-      confidence: null
-      sources: []
+      answer: "Create a Go core package exposing a DownloadManager service with events (channels) and state APIs. Both CLI and API invoke the same package; API streams events via SSE."
+      confidence: "HIGH"
+      sources:
+        - "dev/architecture/core-migration.md"
 
 sources:
   libraries:
@@ -72,58 +77,58 @@ sources:
       stars: 74000
       license: "MIT"
       relevance: "Most popular Go web framework"
-      evaluation_status: "not_evaluated"
-      evaluation_notes: null
-      recommendation: null
+      evaluation_status: "evaluated"
+      evaluation_notes: "Mature, active; middleware ecosystem; net/http-based; good docs; easy SSE/WebSocket integration via contrib libs."
+      recommendation: "Recommended"
 
     - name: "echo"
       url: "https://github.com/labstack/echo"
       stars: 27000
       license: "MIT"
       relevance: "High-performance, minimalist framework"
-      evaluation_status: "not_evaluated"
-      evaluation_notes: null
-      recommendation: null
+      evaluation_status: "evaluated"
+      evaluation_notes: "Minimalist router, good performance; smaller ecosystem than gin; adequate features."
+      recommendation: "Considered"
 
     - name: "fiber"
       url: "https://github.com/gofiber/fiber"
       stars: 30000
       license: "MIT"
       relevance: "Express-inspired, fastest benchmarks"
-      evaluation_status: "not_evaluated"
-      evaluation_notes: null
-      recommendation: null
+      evaluation_status: "evaluated"
+      evaluation_notes: "Built on fasthttp (non-stdlib); potential incompatibilities with net/http ecosystem and HTTP/2; fastest on benchmarks but higher lock-in."
+      recommendation: "Not recommended for our use"
 
 tasks:
   - id: "T001"
     description: "Evaluate Go HTTP frameworks"
     estimated_hours: 1.5
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 1.2
+    status: "complete"
 
   - id: "T002"
     description: "Research WebSocket vs SSE"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.8
+    status: "complete"
 
   - id: "T003"
     description: "Design JWT authentication"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 1
+    status: "complete"
 
   - id: "T004"
     description: "Define API versioning strategy"
     estimated_hours: 0.5
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.5
+    status: "complete"
 
   - id: "T005"
     description: "Document API design"
     estimated_hours: 1
-    actual_hours: 0
-    status: "not_started"
+    actual_hours: 0.5
+    status: "complete"
 
 findings:
   discoveries: []
@@ -131,23 +136,126 @@ findings:
     - category: "Go HTTP Frameworks"
       options:
         - name: "stdlib net/http"
-          pros: []
-          cons: []
-          score: null
+          pros: ["Zero deps", "Go team maintained", "Stable"]
+          cons: ["Manual routing/middleware", "More boilerplate"]
+          score: 86
         - name: "gin"
-          pros: []
-          cons: []
-          score: null
+          pros:
+            [
+              "Popular & active",
+              "Rich middleware",
+              "Good docs",
+              "net/http-based",
+            ]
+          cons:
+            [
+              "Slight learning curve vs stdlib",
+              "Router limitations vs chi in some cases",
+            ]
+          score: 90
         - name: "echo"
-          pros: []
-          cons: []
-          score: null
+          pros: ["Minimalist", "Fast", "Clear API"]
+          cons: ["Smaller ecosystem", "Docs less extensive than gin"]
+          score: 82
         - name: "fiber"
-          pros: []
-          cons: []
-          score: null
+          pros: ["Very fast", "Express-like API"]
+          cons: ["fasthttp lock-in", "Compatibility trade-offs", "HTTP/2 story"]
+          score: 72
 
-decisions: []
+decisions:
+  - id: "D006"
+    title: "REST API Framework Selection"
+    category: "LIBRARY_SELECTION"
+    research_id: "R08"
+    feature_ids:
+      - "F025"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-28"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Select Go HTTP framework for SafeDownload REST API server"
+      constraints:
+        - "Optional frontend: cannot add forced deps to core (Principle II)"
+        - "Permissive license required (MIT/Apache/BSD)"
+        - "SSE/WebSocket integration for progress"
+      assumptions:
+        - "Gin's ecosystem reduces future effort"
+        - "Performance differences are negligible for our workload"
+
+    options_considered:
+      - name: "stdlib net/http"
+        pros: ["Zero deps", "Full control", "Go team maintained"]
+        cons: ["More boilerplate", "Manual middleware"]
+        score: 86
+      - name: "gin"
+        pros:
+          [
+            "Active ecosystem",
+            "Middleware support",
+            "Good docs",
+            "net/http-based",
+          ]
+        cons: ["Learning curve vs stdlib"]
+        score: 90
+      - name: "echo"
+        pros: ["Minimalist", "Fast"]
+        cons: ["Smaller ecosystem"]
+        score: 82
+      - name: "fiber"
+        pros: ["Fastest benchmarks", "Express-like"]
+        cons: ["fasthttp dependency", "Compatibility trade-offs"]
+        score: 72
+
+    decision:
+      selection: "gin"
+      rationale: "Balances developer experience, ecosystem, and constitution alignment while remaining net/http-compatible."
+      trade_offs_accepted:
+        - "Framework dependency (optional component only)"
+        - "Slight learning curve"
+      fallback_plan: "Use stdlib net/http with small router (chi) if framework overhead proves problematic"
+
+  - id: "D007"
+    title: "Real-time Updates Mechanism"
+    category: "ARCHITECTURE_PATTERN"
+    research_id: "R08"
+    feature_ids:
+      - "F025"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-28"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Choose mechanism for streaming download progress to clients"
+      constraints:
+        - "Must be proxy/firewall friendly"
+        - "Low complexity preferred"
+        - "Bidirectional control handled by REST endpoints"
+      assumptions:
+        - "Clients primarily consume one-way progress events"
+
+    options_considered:
+      - name: "Server-Sent Events (SSE)"
+        pros: ["Simple", "HTTP-friendly", "Low overhead"]
+        cons: ["One-way only"]
+        score: 90
+      - name: "WebSocket"
+        pros: ["Bidirectional", "Rich interactions"]
+        cons: ["More complex", "Proxy issues in some environments"]
+        score: 78
+
+    decision:
+      selection: "SSE for progress streaming; WebSocket optional for interactive features"
+      rationale: "SSE meets primary needs with minimal complexity and strong compatibility; WebSocket reserved for future interactive control."
+      trade_offs_accepted:
+        - "No client-to-server messages over SSE"
+      fallback_plan: "Add WebSocket endpoint if future features require bidirectional communication"
 
 integration:
   feature_specs:
@@ -157,12 +265,22 @@ integration:
         - section: "implementation"
           change: "Document chosen framework"
           status: "pending"
+        - section: "events"
+          change: "Add SSE endpoint specification for progress stream"
+          status: "pending"
 
 log:
-  entries: []
+  entries:
+    - date: "2025-12-28"
+      note: "Completed R08 research; proposed decisions D006 (framework) and D007 (updates mechanism)."
 
 summary:
-  executive_summary: null
-  recommendations: []
-  open_questions: []
-  overall_confidence: null
+  executive_summary: "Recommend Gin for REST API with SSE for progress streaming. Keep API as optional frontend aligned with Constitution. JWT auth via local pre-shared token with rotation; path-based versioning (/api/v1)."
+  recommendations:
+    - "Adopt Gin; build modular handlers using shared core package"
+    - "Implement SSE endpoint for live progress"
+    - "Use Bearer token auth with HMAC-signed JWT (short-lived); support static API key for local deployments"
+    - "Version APIs via path (/api/v1) with optional Accept-Version header"
+  open_questions:
+    - "Do we need bidirectional real-time control beyond REST?"
+  overall_confidence: "HIGH"

@@ -20,9 +20,9 @@
 metadata:
   version: "1.0.0"
   created: "2025-12-25"
-  updated: "2025-12-26"
-  total_decisions: 2
-  decisions_pending: 2
+  updated: "2025-12-28"
+  total_decisions: 6
+  decisions_pending: 6
   decisions_approved: 0
   decisions_implemented: 0
 
@@ -260,6 +260,137 @@ decisions:
       validation_method: "Integration tests + benchmarks during Sprint 01"
       revisit_trigger: "If implementation takes >5 days or performance benchmarks fail gates"
 
+  - id: "D006"
+    title: "REST API Framework Selection"
+    category: "LIBRARY_SELECTION"
+    research_id: "R08"
+    feature_ids:
+      - "F025"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-28"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Choose the Go HTTP framework for SafeDownload REST API"
+      constraints:
+        - "Optional component only; must not force deps on core"
+        - "Permissive license"
+        - "SSE integration for progress"
+      assumptions:
+        - "Performance differences negligible for our needs"
+
+    options_considered:
+      - name: "stdlib net/http"
+        pros: ["Zero deps", "Full control", "Go team maintained"]
+        cons: ["More boilerplate", "Manual middleware"]
+        score: 86
+      - name: "gin"
+        pros:
+          [
+            "Active ecosystem",
+            "Middleware support",
+            "Good docs",
+            "net/http-based",
+          ]
+        cons: ["Slight learning curve"]
+        score: 90
+      - name: "echo"
+        pros: ["Minimalist", "Fast"]
+        cons: ["Smaller ecosystem"]
+        score: 82
+      - name: "fiber"
+        pros: ["Fastest benchmarks", "Express-like"]
+        cons: ["fasthttp dependency", "Compatibility trade-offs"]
+        score: 72
+
+    decision:
+      selection: "gin"
+      rationale: "Best balance of DX, ecosystem, and net/http compatibility; aligns with constitution via optional API frontend"
+      trade_offs_accepted:
+        - "Framework dependency in optional component"
+      fallback_plan: "Use stdlib net/http (or chi) if framework overhead becomes an issue"
+
+    implementation:
+      effort_estimate: "M"
+      blocking_tasks:
+        - "Scaffold Gin server with versioned routes"
+        - "Integrate SSE endpoint for progress events"
+      non_blocking_tasks:
+        - "Add WebSocket endpoint if future features require bidirectional control"
+
+    review:
+      reviewers: []
+      concerns_raised: []
+      concerns_addressed: []
+
+    validation:
+      success_criteria:
+        - "SSE stream stable under concurrent downloads"
+        - "Auth middleware protects endpoints"
+        - "Endpoints meet basic performance gates"
+      validation_method: "Local prototype + integration tests"
+      revisit_trigger: "If SSE is insufficient for client needs"
+
+  - id: "D007"
+    title: "Real-time Updates Mechanism"
+    category: "ARCHITECTURE_PATTERN"
+    research_id: "R08"
+    feature_ids:
+      - "F025"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-28"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Select mechanism to stream progress updates to API clients"
+      constraints:
+        - "Proxy/firewall friendly"
+        - "Low complexity"
+      assumptions:
+        - "One-way event streaming meets initial requirements"
+
+    options_considered:
+      - name: "Server-Sent Events (SSE)"
+        pros: ["Simple", "HTTP-friendly", "Low overhead"]
+        cons: ["One-way only"]
+        score: 90
+      - name: "WebSocket"
+        pros: ["Bidirectional", "Rich interactions"]
+        cons: ["More complex", "Potential proxy issues"]
+        score: 78
+
+    decision:
+      selection: "SSE now; WebSocket optional later"
+      rationale: "SSE aligns with needs and keeps complexity low; WebSocket added only when truly needed"
+      trade_offs_accepted:
+        - "No client-to-server messaging over SSE"
+      fallback_plan: "Introduce WebSocket endpoint for interactive features if required"
+
+    implementation:
+      effort_estimate: "S"
+      blocking_tasks:
+        - "Implement `/api/v1/events` SSE endpoint"
+      non_blocking_tasks:
+        - "Add WebSocket if future feature demands"
+
+    review:
+      reviewers: []
+      concerns_raised: []
+      concerns_addressed: []
+
+    validation:
+      success_criteria:
+        - "SSE works behind common proxies"
+        - "Clients can consume progress reliably"
+      validation_method: "Manual + automated integration tests"
+      revisit_trigger: "Interactive control requirements emerge"
+
   - id: "D004"
     title: "Accessible Terminal UI Implementation Approach"
     category: "IMPLEMENTATION_APPROACH"
@@ -365,6 +496,166 @@ decisions:
       validation_method: "Manual testing with VoiceOver on macOS, colorblind simulation tools"
       revisit_trigger: "If Bubble Tea library has better accessibility primitives in future versions"
 
+  - id: "D005"
+    title: "Distribution Tooling and Hosting Strategy for v1.3.0"
+    category: "IMPLEMENTATION_APPROACH"
+    research_id: "R07"
+    feature_ids:
+      - "F021"
+      - "F022"
+      - "F023"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-28"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Select packaging tooling and distribution channels for SafeDownload v1.3.0 across macOS and Linux (Debian/Ubuntu, RPM-based)."
+      constraints:
+        - "Minimal maintenance burden for initial release"
+        - "Signed packages and checksums for security"
+        - "CI-friendly automation"
+      assumptions:
+        - "User base initially comfortable installing via GitHub Releases"
+        - "Homebrew tap improves macOS experience significantly"
+        - "Hosted repos can be added later if demand grows"
+
+    options_considered:
+      - name: "Goreleaser + nfpm; GitHub Releases + Brew tap"
+        pros:
+          - "Unified config and automation"
+          - "Signed packages via nfpm"
+          - "Tap publishing built-in"
+          - "Low maintenance to start"
+        cons:
+          - ".deb/.rpm installed manually (dpkg/rpm) initially"
+        score: 88
+
+      - name: "Self-hosted apt/yum repos (reprepro/createrepo) now"
+        pros:
+          - "Best UX for Linux users"
+          - "System updates integrate automatically"
+        cons:
+          - "High maintenance and infra complexity"
+          - "Signing and rotation overhead"
+        score: 68
+
+      - name: "Hosted repo provider (Cloudsmith/PackageCloud)"
+        pros:
+          - "Professional hosting, lower infra burden"
+          - "Good UX for users"
+        cons:
+          - "Ongoing cost"
+          - "Vendor dependency"
+        score: 78
+
+    decision:
+      selection: "Goreleaser + nfpm; GitHub Releases + Brew tap initially"
+      rationale: |
+        This approach delivers signed packages and a great macOS experience
+        with minimal maintenance. It aligns with our constitution's minimal
+        dependencies and allows us to iterate. We can add hosted repos later
+        based on demand without retooling packaging.
+      trade_offs_accepted:
+        - "Linux users initially install via dpkg/rpm rather than apt/yum repos"
+        - "Delayed repository index hosting until demand justifies"
+      fallback_plan: "Adopt hosted repository provider if manual installation creates friction or support burden."
+
+    implementation:
+      effort_estimate: "M"
+      blocking_tasks:
+        - "Create tap repo and goreleaser brews config"
+        - "Add nfpm sections for deb/rpm with signing via CI secrets"
+        - "Publish signed SHA256SUMS with releases"
+      non_blocking_tasks:
+        - "Explore hosted repo options and costs"
+        - "Design self-hosted repo scripts (reprepro/createrepo)"
+
+    review:
+      reviewers: []
+      concerns_raised: []
+      concerns_addressed: []
+
+    validation:
+      success_criteria:
+        - "Brew install works from tap"
+        - ".deb/.rpm install succeeds on Tier 1 platforms"
+        - "Packages are signed and verifiable"
+      validation_method: "Manual install tests in CI matrix + local verification"
+      revisit_trigger: "Significant user demand for apt/yum repos or support friction with manual installs"
+
+  - id: "D008"
+    title: "Plugin Architecture Selection"
+    category: "ARCHITECTURE_PATTERN"
+    research_id: "R09"
+    feature_ids:
+      - "F020"
+    status: "PROPOSED"
+
+    dates:
+      proposed: "2025-12-28"
+      approved: null
+      implemented: null
+
+    context:
+      problem_statement: "Select runtime plugin architecture for SafeDownload"
+      constraints:
+        - "Cross-platform support (Tier 1)"
+        - "Security isolation for third-party plugins"
+        - "Minimal forced dependencies"
+      assumptions:
+        - "Plugins primarily extend CLI commands and processing"
+
+    options_considered:
+      - name: "Go native plugins"
+        pros: ["Fast", "Type-safe"]
+        cons: ["Version coupling", "Limited platform support"]
+        score: 60
+      - name: "Subprocess/exec + JSON-RPC over stdio"
+        pros: ["Isolation", "Language-agnostic", "Simple transport"]
+        cons: ["IPC overhead", "Protocol effort"]
+        score: 88
+      - name: "HashiCorp go-plugin (gRPC)"
+        pros: ["Battle-tested", "Structured RPC"]
+        cons: ["Dependency and complexity"]
+        score: 85
+      - name: "WASM"
+        pros: ["Sandboxed", "Portable"]
+        cons: ["Complex", "Perf trade-offs"]
+        score: 70
+
+    decision:
+      selection: "Subprocess/exec + JSON-RPC over stdio"
+      rationale: "Balances portability, security, and minimal dependencies while maintaining optional plugin model."
+      trade_offs_accepted:
+        - "Design and maintain a small RPC protocol"
+        - "Slight performance overhead vs in-process"
+      fallback_plan: "Adopt HashiCorp go-plugin if richer RPC features needed"
+
+    implementation:
+      effort_estimate: "M"
+      blocking_tasks:
+        - "Define JSON-RPC schema and host interface"
+        - "Implement plugin discovery and manifest"
+        - "Create sample plugin (Go and Python)"
+      non_blocking_tasks:
+        - "Optional sandboxing integrations (seccomp/macOS sandbox)"
+
+    review:
+      reviewers: []
+      concerns_raised: []
+      concerns_addressed: []
+
+    validation:
+      success_criteria:
+        - "Plugins run cross-platform (macOS, Ubuntu, Debian)"
+        - "Host enforces env/args allowlist"
+        - "Protocol supports capability discovery and version negotiation"
+      validation_method: "Integration tests with sample plugins"
+      revisit_trigger: "If protocol complexity grows beyond scope"
+
 # Decision Backlog
 # Decisions that need to be made but lack sufficient research
 backlog:
@@ -415,21 +706,21 @@ backlog:
     research_id: "R07"
     blocking_version: "1.3.0"
     urgency: "LOW"
-    notes: null
+    notes: "RESOLVED - See decision D005"
 
   - id: "DB008"
     question: "REST API framework selection"
     research_id: "R08"
     blocking_version: "2.0.0"
     urgency: "LOW"
-    notes: "Can defer, v2.0.0 is distant"
+    notes: "RESOLVED - See decision D006"
 
   - id: "DB009"
     question: "Plugin system architecture"
     research_id: "R09"
     blocking_version: "1.2.0"
     urgency: "MEDIUM"
-    notes: null
+    notes: "RESOLVED - See decision D008"
 
   - id: "DB010"
     question: "CGO usage policy"
